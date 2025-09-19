@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import validator from "validator";
-import bcrypt from "bcryptjs";
 
 // Define the User Schema
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: [true, "Please provide your name"],
+    },
     // Email field with validation for uniqueness and format
     email: {
       type: String,
@@ -23,7 +26,7 @@ const userSchema = new mongoose.Schema(
     // Password confirmation field, used for validation during registration
     passwordConfirm: {
       type: String,
-      required: [true, "Please confirm your password"],
+      // required: [true, "Please confirm your password"],
       validate: {
         // Custom validator to ensure passwordConfirm matches the password
         validator: function (el) {
@@ -43,6 +46,7 @@ const userSchema = new mongoose.Schema(
         "hospital_staff",
         "donor",
       ],
+      default: "donor",
       required: true, // Role is a mandatory field
     },
     // Active status for the user account, default is true
@@ -56,29 +60,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Mongoose pre-save hook to hash the password before saving
-userSchema.pre("save", async function (next) {
-  // Only run this function if password was actually modified
-  if (!this.isModified("password")) return next();
-
-  // Hash the password with a cost factor of 12 (more rounds = more secure)
-  this.password = await bcrypt.hash(this.password, 12);
-
-  // Delete passwordConfirm field before saving to DB
-  this.passwordConfirm = undefined;
-  next();
-});
-
-// Instance method to compare candidate password with hashed password in the database
-userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
-) {
-  // Compare the provided password with the stored hashed password
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
-
 // Create the User model from the schema
 const User = mongoose.model("User", userSchema);
-
 export default User;

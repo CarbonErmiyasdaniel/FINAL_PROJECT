@@ -1,29 +1,31 @@
-// server/src/index.js (updated)
-
+import "./startup.js"; // This must be the very first import
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import authRoutes from "./routes/authRoutes.js"; // ⬅️ IMPORT THE NEW ROUTER
-
-// Load environment variables
-// dotenv.config({ path: "../.env" });
-dotenv.config();
+import authRoutes from "./routes/authRoutes.js";
+// import donorRoutes from "./routes/donorRoutes.js";
+import nurseRoutes from "./routes/nurseRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Connect to the database
 connectDB();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Define API routes
-app.use("/api/auth", authRoutes); // ⬅️ USE THE NEW ROUTER
+// Add this line to check the variable
+console.log(
+  "Index.js: JWT_SECRET available:",
+  process.env.JWT_SECRET ? "Yes" : "No"
+);
 
-// Start the server
+app.use("/api/auth/", authRoutes);
+app.use("/api/admins", adminRoutes);
+app.use("/api/nurses", nurseRoutes);
+// app.use("/api/donors", donorRoutes);
+
 app.listen(port, () => {
   console.log(`Server is running on this port: ${port}`);
 });
