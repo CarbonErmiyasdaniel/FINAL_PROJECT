@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
       console.log(
         "Seed not needed: admin exists or bootstrap already completed."
       );
-      process.exit(0);
+      // process.exit(0);
       return res.status(400).json({ msg: " admin already exists" });
     }
 

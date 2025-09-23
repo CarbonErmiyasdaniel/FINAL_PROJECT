@@ -1,27 +1,24 @@
 import mongoose from "mongoose";
-import validator from "validator";
 
 const personalInfoSchema = new mongoose.Schema(
   {
+    // Link to the User model, representing the registered donor
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
+      unique: true, // Ensures a one-to-one relationship with the User
     },
-    donorRecords: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "DonorRecord",
-      required: false,
-    },
+    // Optional link to Donor Records (if applicable)
+    // donorRecords: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "DonorRecord",
+    // },
     title: {
       type: String,
       enum: ["Mr.", "Mrs.", "Ms.", "Dr.", "Eng.", "Other"],
     },
-    firstName: {
-      type: String,
-      required: [true, "Please provide the donor's first name"],
-    },
+
     fatherName: {
       type: String,
       required: [true, "Please provide the donor's father's name"],
@@ -44,6 +41,7 @@ const personalInfoSchema = new mongoose.Schema(
       type: String,
     },
     contact: {
+      email: { type: String, unique: true, sparse: true },
       city: { type: String },
       subCityRegion: { type: String },
       zone: { type: String },
@@ -52,13 +50,6 @@ const personalInfoSchema = new mongoose.Schema(
       residenceAddress: { type: String },
       telephone: { type: String },
       cellphone: { type: String },
-      email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-        validate: [validator.isEmail, "Please provide a valid email"],
-      },
       pobox: { type: String },
       organization: { type: String },
     },
@@ -74,5 +65,4 @@ const personalInfoSchema = new mongoose.Schema(
 );
 
 const PersonalInfo = mongoose.model("PersonalInfo", personalInfoSchema);
-
 export default PersonalInfo;

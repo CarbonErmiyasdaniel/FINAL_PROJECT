@@ -75,11 +75,11 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 
-/**
- * Middleware factory to authenticate users with a specific role.
- * @param {string} requiredRole - The role the user must have to access the route.
- * @returns {Function} Express middleware function.
- */
+// /**
+//  * Middleware factory to authenticate users with a specific role.
+//  * @param {string} requiredRole - The role the user must have to access the route.
+//  * @returns {Function} Express middleware function.
+//  */
 const authenticate = (requiredRole) => async (req, res, next) => {
   let token;
 

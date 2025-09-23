@@ -11,7 +11,7 @@ console.log("Seeder loaded MONGO_URI:", process.env.MONGO_URI);
 
 async function run() {
   try {
-    // ✅ Call the connectDB function directly
+    // Call the connectDB function directly
     await connectDB();
 
     const existingAdmin = await User.findOne({ role: "admin" });

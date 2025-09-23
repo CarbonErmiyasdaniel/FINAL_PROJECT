@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const donationSchema = new mongoose.Schema(
   {
+    personalInfo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PersonalInfo",
+      required: true,
+    },
     dateOfDonation: {
       type: Date,
       required: true,
@@ -12,9 +17,10 @@ const donationSchema = new mongoose.Schema(
     hemoglobinLevel: {
       type: Number,
     },
-    bloodGroup: {
+    aboRh: {
       type: String,
-      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"],
+      default: "Unknown",
     },
     typeOfDonation: {
       type: String,

@@ -16,7 +16,7 @@ const donorRecordSchema = new mongoose.Schema(
     ],
     aboRh: {
       type: String,
-      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"],
       default: "Unknown",
     },
   },
