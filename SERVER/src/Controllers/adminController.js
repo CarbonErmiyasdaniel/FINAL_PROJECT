@@ -6,7 +6,6 @@ import HospitalRequest from "../models/HospitalRequest.js";
 import NurseReport from "../models/NurseReport.js";
 import bcrypt from "bcryptjs"; // Make sure you have this for password hashing
 
-// @desc    Get all users (donors, nurses, and admins)
 // @route   GET /api/admins/users
 export const getAllUsers = async (req, res) => {
   try {
@@ -18,32 +17,51 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// @desc    Create a new user
-// @route   POST /api/admins/users
 export const createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    const registeredBy = req.user._id;
 
+    if (!registeredBy) {
+      return res.status(401).json({ msg: "Authentication required." });
+    }
+
+    // Prevent admin from creating donors
+    if (role === "donor") {
+      return res
+        .status(403)
+        .json({ msg: "Admin is not allowed to register donor accounts." });
+    }
+
+    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create a new user (only staff roles allowed)
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      role,
+      role, // allowed roles only (nurse, lab_technician, etc.)
+      registeredBy,
     });
 
     await newUser.save();
 
     res.status(201).json({
       success: true,
-      data: newUser,
+      data: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
     });
   } catch (err) {
     console.error(err.message);
@@ -53,6 +71,8 @@ export const createUser = async (req, res) => {
     });
   }
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 // @desc    Update a user
 // @route   PUT /api/admins/users/:userId

@@ -4,9 +4,8 @@ import {
   registerDonor,
   registerDonorInfo,
   registerDonation,
-  getAllDonors,
-  searchDonor,
-  updateNurseAccount,
+  getAllDonors_to_insert_information,
+  getDonorNumber,
   // logoutNurse,
   // writeReport,
 } from "../Controllers/nurseController.js";
@@ -15,11 +14,13 @@ const router = express.Router();
 
 // Nurse-specific routes
 router.post("/register-donor", authNurse, registerDonor);
-router.post("/registerDonorInfo/:donorId", authNurse, registerDonorInfo);
+router.get("/get_doners", authNurse, getAllDonors_to_insert_information);
+// router.post("/registerDonorInfo/:userId", authNurse, registerDonorInfo);
+router.post("/registerDonorInfo/:userId", authNurse, registerDonorInfo);
+router.get("/getDonorNumber/donorId", authNurse, getDonorNumber);
+// router.put("/updateDonorInfo/:donorId", authNurse, updateDonorInfo);
 router.post("/registerDonation/:donorId", authNurse, registerDonation);
-router.get("/getAllDonors", authNurse, getAllDonors);
-router.post("/searchDonor", authNurse, searchDonor);
-router.patch("/updateNurseAccount", authNurse, updateNurseAccount);
+// router.patch("/updateNurseAccount", authNurse, updateNurseAccount);
 // router.post("/addDonationRecord/:donorId", authNurse, addDonationRecord);
 
 // router.get("/donors", authNurse, getAllDonors);

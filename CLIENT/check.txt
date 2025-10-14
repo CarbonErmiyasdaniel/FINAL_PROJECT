@@ -1,0 +1,45 @@
+   adminemail         ermiyasdaniel33@gmail.com
+  adminpassword       ermi123456
+ 
+
+
+
+{
+  "name": "elda",
+  "email":          elda@example.com
+  "password":       12345678
+  "role": "nurse"
+}  
+
+
+{
+  "name": "ananiya",
+  "email":             and@example.com
+  "password": "123456",
+  "role": "donor"
+}
+
+{
+  "name": "ibro",
+  "email":          ibro@example.com
+  "password": "123456",
+  "role":          lab_technician
+}
+
+ {
+  "name": "meri",
+  "email":              mwei@example.com
+  "password": "  123456",
+  "role": "post_counselor"
+}
+
+
+{
+  "name": "rekik",
+  "email":      rekik@example.com
+  "password": 123456
+  "role":   hospital_staff
+}
+
+# to run the seed admin 
+PS C:\Users\a one\Desktop\FINAL _PROJECT\SERVER> npm run seed:admin

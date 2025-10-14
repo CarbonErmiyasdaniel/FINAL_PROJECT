@@ -1,4 +1,3 @@
-// seeds/seed-admin.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
@@ -29,20 +28,26 @@ async function run() {
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
 
-    // const salt = await bcrypt.genSalt(12);
-    // const hashedPassword = await bcrypt.hash(adminPassword, salt);
+    // Safety check for critical fields
+    if (!adminName || !adminEmail || !adminPassword) {
+      console.error(
+        "Critical environment variables (ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD) are missing or empty."
+      );
+      process.exit(1);
+    } // ⭐️ FIX: Hashing the password using bcrypt ⭐️
+
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
     const newAdmin = new User({
-      name: adminName,
+      name: adminName, // Now correctly using the name variable
       email: adminEmail,
-      password: adminPassword,
-      // password: hashedPassword,
+      password: hashedPassword, // ⭐️ Use the HASHED password for security ⭐️
       role: "admin",
     });
 
-    await newAdmin.save();
+    await newAdmin.save(); // Mark bootstrap complete
 
-    // Mark bootstrap complete
     if (!cfg) {
       await SystemConfig.create({ adminCreated: true });
     } else {
@@ -50,10 +55,15 @@ async function run() {
       await cfg.save();
     }
 
-    console.log("Initial admin created:", newAdmin.email);
+    console.log(
+      "Initial admin created:",
+      newAdmin.email,
+      "Name:",
+      newAdmin.name
+    );
     process.exit(0);
   } catch (err) {
-    console.error("Seed admin failed:", err);
+    console.error("Seed admin failed:", err.message);
     process.exit(1);
   } finally {
     await mongoose.disconnect();
