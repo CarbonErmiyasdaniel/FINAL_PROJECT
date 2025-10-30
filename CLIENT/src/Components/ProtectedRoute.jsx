@@ -17,7 +17,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   // 2️heck authentication
   if (!user.isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   // 3️ Check role authorization

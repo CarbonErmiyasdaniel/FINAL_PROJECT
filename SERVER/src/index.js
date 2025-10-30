@@ -6,6 +6,8 @@ import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import nurseRoutes from "./routes/nurseRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import donorRoutes from "./routes/donorRoutes.js";
+import hospital_staffRoutes from "./routes/hospital_staffRoutes.js";
 // import donorRoutes from "./routes/donorRoutes.js";
 // import lab_technicianRoutes from "./routes/lab_technicianRoutes.js";
 // import post_counselorRoutes from "./routes/post_counselorRoutes.js";
@@ -32,7 +34,8 @@ console.log(
 app.use("/api/auth/", authRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/nurses", nurseRoutes);
-// app.use("/api/donors", donorRoutes);
+app.use("/api/donor", donorRoutes);
+app.use("/api/hospital_staff", hospital_staffRoutes);
 // app.use("/api/lab_technician", lab_technicianRoutes);
 // app.use("/api/post_counselor", post_counselorRoutes);
 // app.use("/api/hospital_staff", hospital_staffRoutes);

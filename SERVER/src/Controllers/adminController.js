@@ -19,7 +19,7 @@ export const getAllUsers = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, phone, role } = req.body;
     const registeredBy = req.user._id;
 
     if (!registeredBy) {
@@ -48,6 +48,7 @@ export const createUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      phone,
       role, // allowed roles only (nurse, lab_technician, etc.)
       registeredBy,
     });
@@ -61,6 +62,7 @@ export const createUser = async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
+        phone: newUser.phone,
       },
     });
   } catch (err) {
@@ -180,14 +182,43 @@ export const updateRequestStatus = async (req, res) => {
 
 // @desc    Get nurse activity reports
 // @route   GET /api/admin/reports/nurse-activity
+
 export const getNurseActivityReports = async (req, res) => {
   try {
+    // Fetch all nurse reports and populate nurseId with name and email
     const nurseReports = await NurseReport.find(
       {},
       { _id: 0, __v: 0 }
-    ).populate("nurseId", "name email");
+    ).populate("nurseId", "name email"); // Populate nurseId with name and email
 
-    res.json(nurseReports);
+    // Check if reports were found
+    if (!nurseReports || nurseReports.length === 0) {
+      return res.status(404).json({ msg: "No reports found" });
+    }
+
+    // Return the list of nurse reports
+    res.status(200).json(nurseReports);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const getNurseReportById = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    // Fetch the nurse report by ID and populate nurseId with name and email
+    const nurseReport = await NurseReport.findById(reportId).populate(
+      "nurseId",
+      "name email"
+    ); // Populate nurseId with name and email
+
+    if (!nurseReport) {
+      return res.status(404).json({ msg: "Report not found" });
+    }
+
+    res.status(200).json(nurseReport);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: "Server error" });

@@ -24,7 +24,15 @@ const userSchema = new mongoose.Schema(
       minlength: 8, // Minimum password length of 8 characters
       select: false, // Prevents password from being returned in query results by default
     },
-
+    phone: {
+      type: String,
+      validate: {
+        validator: function (v) {
+          return /^\+?[1-9]\d{1,14}$/.test(v); // E.164 format
+        },
+        message: (props) => `${props.value} is not a valid phone number!`,
+      },
+    },
     // 🔑 2. NEW FIELDS FOR PASSWORD RESET TOKEN AND EXPIRY
     resetPasswordToken: String,
     resetPasswordExpire: Date,
@@ -69,8 +77,10 @@ userSchema.methods.getResetPasswordToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  // Set token expiry (e.g., 10 minutes)
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+  // Set token expiry  1 day from now
+  this.resetPasswordExpire = Date.now() + 24 * 60 * 60 * 1000;
+
+  // this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 24 hrs
 
   // Return the *unhashed* token (the one you send via email)
   return resetToken;

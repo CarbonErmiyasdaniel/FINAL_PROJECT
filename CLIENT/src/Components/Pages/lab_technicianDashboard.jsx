@@ -5,7 +5,7 @@ import {
   Menu,
   X,
   Stethoscope, // Icon for patient/treatment
-  Heart, // Icon for postCounselor/blood
+  Heart, // Icon for lab_technician/blood
   ClipboardList, // Icon for records/vitals
   Settings,
   UserPlus, // Icon for Add Donor
@@ -17,7 +17,7 @@ import {
 
 // Assuming these are available globally or imported from a shared file
 import DashboardLayout from "./DashboardLayout";
-import PostCounselorProfile from "../Features/post_counselor/post_counselor_profile.jsx";
+import LabTechnicianProfile from "../Features/lab_technician/lab_technician_profile.jsx";
 // --- SHARED COMPONENT: MetricCard (Styled to match AdminDashboard) ---
 const MetricCard = ({ title, value, icon, color = "blue" }) => (
   <div
@@ -122,10 +122,10 @@ const Sidebar = ({
 };
 
 // --- Main Application Component () ---
-const PostCounselor = ({ pageKey }) => {
+const LabTechnician = ({ pageKey }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(
-    pageKey || "/post_counselor/dashboard"
+    pageKey || "/lab_technician/dashboard"
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -188,7 +188,7 @@ const PostCounselor = ({ pageKey }) => {
           </p>
         </div>
         <button
-          onClick={() => handleNavigate("/post_counselor/add_donor")}
+          onClick={() => handleNavigate("/lab_technician/add_donor")}
           className="flex items-center bg-blue-700 text-white font-bold py-3 px-6 rounded-none shadow-lg transition-all duration-300 hover:bg-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50 transform hover:-translate-y-px"
         >
           <UserPlus className="w-5 h-5 mr-2" /> Add New Donor
@@ -256,16 +256,16 @@ const PostCounselor = ({ pageKey }) => {
     );
 
     switch (currentPage) {
-      case "/post_counselor/dashboard":
+      case "/lab_technician/dashboard":
         return (
           <ViewContainer>
             <DashboardContent />
           </ViewContainer>
         );
-      case "/post_counselor/Profile":
+      case "/lab_technician/Profile":
         return (
           <ViewContainer>
-            <PostCounselorProfile />
+            <LabTechnicianProfile />
           </ViewContainer>
         );
 
@@ -289,11 +289,11 @@ const PostCounselor = ({ pageKey }) => {
       >
         <div className="space-y-10">
           <SidebarButton
-            onClick={() => handleNavigate("/post_counselor/dashboard")}
+            onClick={() => handleNavigate("/lab_technician/dashboard")}
             icon={<Home className="h-5 w-5" />}
             label="Dashboard Overview"
             isExpanded={isSidebarOpen}
-            isActive={currentPage === "/post_counselor/dashboard"}
+            isActive={currentPage === "/lab_technician/dashboard"}
           />
           <section className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700">
             <h2
@@ -306,20 +306,20 @@ const PostCounselor = ({ pageKey }) => {
             </h2>
             <div className="flex flex-col gap-3">
               <SidebarButton
-                onClick={() => handleNavigate("/post_counselor/Profile")}
+                onClick={() => handleNavigate("/lab_technician/Profile")}
                 icon={<ClipboardList className="h-5 w-5" />}
                 label="Personal Profile"
                 isExpanded={isSidebarOpen}
-                isActive={currentPage === "/post_counselor/Profile"}
+                isActive={currentPage === "/lab_technician/Profile"}
               />
               <SidebarButton
                 onClick={() =>
-                  handleNavigate("/post_counselor/manage-treatments")
+                  handleNavigate("/lab_technician/manage-treatments")
                 }
                 icon={<Stethoscope className="h-5 w-5" />}
                 label="daily plans"
                 isExpanded={isSidebarOpen}
-                isActive={currentPage === "/post_counselor/manage-treatments"}
+                isActive={currentPage === "/lab_technician/manage-treatments"}
               />
             </div>
           </section>
@@ -334,30 +334,30 @@ const PostCounselor = ({ pageKey }) => {
             </h2>
             {isSidebarOpen && (
               <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                Manage post_counselor intake and review blood stock status.
+                Manage lab_technician intake and review blood stock status.
               </p>
             )}
             <div className="flex flex-col gap-4">
               <SidebarButton
-                onClick={() => handleNavigate("/post_counselor/Donor_Register")}
+                onClick={() => handleNavigate("/lab_technician/Donor_Register")}
                 icon={<UserPlus className="h-5 w-5" />}
                 label="Add New Donor"
                 isExpanded={isSidebarOpen}
-                isActive={currentPage === "/post_counselor/Donor_Register"}
+                isActive={currentPage === "/lab_technician/Donor_Register"}
               />
               <SidebarButton
-                onClick={() => handleNavigate("/post_counselor/writeReport/")}
+                onClick={() => handleNavigate("/lab_technician/writeReport/")}
                 icon={<UserPlus className="h-5 w-5" />}
                 label="Daily donation report "
                 isExpanded={isSidebarOpen}
-                isActive={currentPage === "/post_counselor/writeReport/"}
+                isActive={currentPage === "/lab_technician/writeReport/"}
               />
               <SidebarButton
-                onClick={() => handleNavigate("/post_counselor/Donor_List")}
+                onClick={() => handleNavigate("/lab_technician/Donor_List")}
                 icon={<Users className="h-5 w-5" />}
                 label="Get Donor List"
                 isExpanded={isSidebarOpen}
-                isActive={currentPage === "/post_counselor/Donor_List"}
+                isActive={currentPage === "/lab_technician/Donor_List"}
               />
             </div>
           </section>
@@ -371,11 +371,11 @@ const PostCounselor = ({ pageKey }) => {
               {isSidebarOpen && "Configuration"}
             </h2>
             <SidebarButton
-              onClick={() => handleNavigate("/post_counselor/settings")}
+              onClick={() => handleNavigate("/lab_technician/settings")}
               icon={<Settings className="h-5 w-5" />}
               label="Manage Settings"
               isExpanded={isSidebarOpen}
-              isActive={currentPage === "/post_counselor/settings"}
+              isActive={currentPage === "/lab_technician/settings"}
             />
           </section>
         </div>
@@ -399,11 +399,11 @@ const PostCounselor = ({ pageKey }) => {
   );
 };
 
-// EXPORT FIX: Wrap post_counselor with DashboardLayout
-const WrappedNew_post_counselor_Dashboard = (props) => (
+// EXPORT FIX: Wrap LabTechnician with DashboardLayout
+const WrappedNewlab_technicianDashboard = (props) => (
   <DashboardLayout>
-    <PostCounselor {...props} />
+    <LabTechnician {...props} />
   </DashboardLayout>
 );
 
-export default WrappedNew_post_counselor_Dashboard;
+export default WrappedNewlab_technicianDashboard;

@@ -246,12 +246,12 @@ export default router;
 router.post("/logout", authProtect, async (req, res) => {
   // ⬅️ The fix is here
   // 1. Get the token from the request object (attached by the authenticate middleware)
-  const tokenToBlacklist = req.token;
+  // const tokenToBlacklist = req.token;// change
 
   try {
     // 2. Add the current JWT to the blacklist model
     // This ensures the token cannot be used again, even if an attacker intercepts the cookie before it's cleared.
-    await TokenBlacklist.create({ token: tokenToBlacklist });
+    // await TokenBlacklist.create({ token: tokenToBlacklist });/////////////////////change
 
     // 3. Clear the HTTP-only cookie
     // This is the action that logs the user out in the browser.

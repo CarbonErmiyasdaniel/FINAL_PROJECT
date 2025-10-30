@@ -2,11 +2,14 @@ import User from "../models/User.js";
 import PersonalInfo from "../models/PersonalInfo.js";
 import bcrypt from "bcryptjs";
 import Donation from "../models/Donation.js";
-
+import NurseReport from "../models/NurseReport.js";
 // @desc    Register a new donor
 // @route   POST /api/nurses/donors
 export const registerDonor = async (req, res) => {
   try {
+    if (req.user.role !== "nurse") {
+      return res.status(403).json({ success: false, msg: "Access denied" });
+    }
     // Only extract necessary information from the request body.
     const { name, email, password } = req.body;
     const registeredBy = req.user._id; // Example: getting the nurse's ID from the authenticated user object.
@@ -111,6 +114,9 @@ export const getAllDonors_to_insert_information = async (req, res) => {
 // @access Private (Authenticated)
 export const registerDonorInfo = async (req, res) => {
   try {
+    if (req.user.role !== "nurse") {
+      return res.status(403).json({ success: false, msg: "Access denied" });
+    }
     const { userId } = req.params;
 
     if (!userId || userId.length !== 24) {
@@ -142,6 +148,9 @@ export const registerDonorInfo = async (req, res) => {
 // Get donor number for display
 export const getDonorNumber = async (req, res) => {
   try {
+    if (req.user.role !== "nurse") {
+      return res.status(403).json({ success: false, msg: "Access denied" });
+    }
     const { donorId } = req.params;
 
     // Check if donor exists
@@ -311,6 +320,9 @@ export const getDonorNumber = async (req, res) => {
 /////////////////////////////////
 export const registerDonation = async (req, res) => {
   try {
+    if (req.user.role !== "nurse") {
+      return res.status(403).json({ success: false, msg: "Access denied" });
+    }
     const donorId = req.params.donorId;
 
     // Check if donor exists
@@ -514,21 +526,24 @@ export const registerDonation = async (req, res) => {
 // };
 
 // // Write a new nurse report
-// export const writeReport = async (req, res) => {
-//   try {
-//     const { action, details } = req.body;
-//     const newReport = new NurseReport({
-//       nurseId: req.user._id,
-//       reportDate: new Date(),
-//       action,
-//       details,
-//     });
-//     await newReport.save();
-//     res
-//       .status(201)
-//     .json({ msg: "Report submitted successfully", report: newReport });
-// } catch (err) {
-//   console.error(err.message);
-//   res.status(500).send("Server error");
-// }
-// };
+export const writeReport = async (req, res) => {
+  try {
+    if (req.user.role !== "nurse") {
+      return res.status(403).json({ success: false, msg: "Access denied" });
+    }
+    const { action, details } = req.body;
+    const newReport = new NurseReport({
+      nurseId: req.user._id,
+      reportDate: new Date(),
+      action,
+      details,
+    });
+    await newReport.save();
+    res
+      .status(201)
+      .json({ msg: "Report submitted successfully", report: newReport });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+};

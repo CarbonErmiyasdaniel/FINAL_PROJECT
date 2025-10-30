@@ -6,6 +6,7 @@ import {
   registerDonation,
   getAllDonors_to_insert_information,
   getDonorNumber,
+  writeReport,
   // logoutNurse,
   // writeReport,
 } from "../Controllers/nurseController.js";
@@ -20,6 +21,7 @@ router.post("/registerDonorInfo/:userId", authNurse, registerDonorInfo);
 router.get("/getDonorNumber/donorId", authNurse, getDonorNumber);
 // router.put("/updateDonorInfo/:donorId", authNurse, updateDonorInfo);
 router.post("/registerDonation/:donorId", authNurse, registerDonation);
+router.post("/writeReport/", authNurse, writeReport);
 // router.patch("/updateNurseAccount", authNurse, updateNurseAccount);
 // router.post("/addDonationRecord/:donorId", authNurse, addDonationRecord);
 

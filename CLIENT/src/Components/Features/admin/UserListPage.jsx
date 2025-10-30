@@ -1,5 +1,3 @@
-// UserListPage.jsx
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -9,16 +7,12 @@ import {
   Search,
   ChevronUp,
   ChevronDown,
-  User, // Added User icon for role card
-  HeartHandshake, // Added for Donor
-  Stethoscope, // Added for Staff/Nurse
+  User,
+  HeartHandshake,
+  Stethoscope,
 } from "lucide-react";
 import { toast } from "react-toastify";
-// Assume this is your shared layout component
-import DashboardLayout from "../../Pages/DashboardLayout";
-// 💥 Imported Modal Component - Using the name you provided: UpdateUser 💥
 import UpdateUser from "./updateUser";
-// ------------------------------------------------------------------
 
 // Utility function to format the role string (e.g., 'lab_technician' -> 'Lab Technician')
 const formatRole = (role) => {
@@ -46,7 +40,6 @@ const UserListPage = () => {
     key: "name",
     direction: "ascending",
   });
-  // State to hold the user currently being edited (or null if modal is closed)
   const [userToEdit, setUserToEdit] = useState(null);
 
   // 1. Fetch Users from Backend
@@ -62,7 +55,7 @@ const UserListPage = () => {
         console.error("Error fetching users:", err);
         const errorMessage =
           err.response?.data?.message ||
-          err.response?.data || // Sometimes backend sends a plain string
+          err.response?.data ||
           "Failed to fetch users. Please check server status.";
         setError(errorMessage);
         toast.error(errorMessage);
@@ -72,19 +65,18 @@ const UserListPage = () => {
     };
 
     fetchUsers();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
-  // 💥 HANDLER: To open the modal 💥
+  // HANDLER: To open the modal
   const handleEditClick = (user) => {
     setUserToEdit(user);
   };
-  // 💥 HANDLER: To close the modal 💥
+  // HANDLER: To close the modal
   const handleCloseModal = () => {
     setUserToEdit(null);
   };
-  // 💥 HANDLER: To update the list after a successful edit 💥
+  // HANDLER: To update the list after a successful edit
   const handleUserUpdated = (updatedUser) => {
-    // Find the updated user in the list and replace it
     setUsers((currentUsers) =>
       currentUsers.map((user) =>
         user._id === updatedUser._id ? updatedUser : user
@@ -92,7 +84,7 @@ const UserListPage = () => {
     );
   };
 
-  // 💥 DELETE HANDLER: To delete a user 💥
+  // DELETE HANDLER: To delete a user
   const handleDelete = async (userId, userName) => {
     if (
       window.confirm(
@@ -100,14 +92,12 @@ const UserListPage = () => {
       )
     ) {
       try {
-        // Send DELETE request to the backend endpoint
         await axios.delete(`/api/admins/users/${userId}`, {
           withCredentials: true,
         });
 
         toast.success(`User '${userName}' deleted successfully.`);
 
-        // Update the state to remove the deleted user from the list
         setUsers((currentUsers) =>
           currentUsers.filter((user) => user._id !== userId)
         );
@@ -120,7 +110,7 @@ const UserListPage = () => {
     }
   };
 
-  // 💥 NEW FUNCTION: Count users by role (for the dashboard cards) 💥
+  // FUNCTION: Count users by role
   const countUsersByRole = (role) => {
     if (role === "staff") {
       return users.filter((user) => STAFF_ROLES.includes(user.role)).length;
@@ -180,210 +170,210 @@ const UserListPage = () => {
   // 4. Loading/Error State Render
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex justify-center items-center h-full min-h-[50vh] bg-white rounded-xl shadow-lg">
-          <Loader2 className="animate-spin h-8 w-8 text-red-700" />
-          <p className="ml-3 text-lg text-gray-600">Loading user data...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex justify-center items-center h-full min-h-[50vh] bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <Loader2 className="animate-spin h-8 w-8 text-red-700 dark:text-red-500" />
+        <p className="ml-3 text-lg text-gray-600 dark:text-gray-400">
+          Loading user data...
+        </p>
+      </div>
     );
   }
 
   if (error && !isLoading) {
     return (
-      <DashboardLayout>
-        <div className="max-w-4xl mx-auto p-8 bg-red-50 rounded-xl shadow-lg border-l-4 border-red-500">
-          <h1 className="text-2xl font-bold text-red-700 mb-4 flex items-center gap-2">
-            <List className="w-6 h-6" /> User List
-          </h1>
-          <p className="text-red-700 font-medium">Error: {error}</p>
-          <p className="text-red-500 mt-2">
-            Could not retrieve user data. Please try again later.
-          </p>
-        </div>
-      </DashboardLayout>
+      <div className="max-w-4xl mx-auto p-8 bg-red-50 dark:bg-red-950 rounded-xl shadow-lg border-l-4 border-red-500">
+        <h1 className="text-2xl font-bold text-red-700 dark:text-red-300 mb-4 flex items-center gap-2">
+          <List className="w-6 h-6" /> User List
+        </h1>
+        <p className="text-red-700 dark:text-red-300 font-medium">
+          Error: {error}
+        </p>
+        <p className="text-red-500 dark:text-red-400 mt-2">
+          Could not retrieve user data. Please try again later.
+        </p>
+      </div>
     );
   }
 
   // 5. Main Content Render (Table)
   return (
-    <DashboardLayout>
-      <div className="p-4 sm:p-8 bg-white rounded-xl shadow-2xl border-t-4 border-red-700">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4 flex items-center gap-3">
-          <Users className="text-red-700 w-8 h-8" /> All System Users (Blood
-          Management)
-        </h1>
-        <p className="text-gray-600 mb-6">
-          A comprehensive list of all registered users in the system,
-          categorized for quick insights.
-        </p>
+    <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-t-4 border-red-700 dark:border-red-600">
+      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+        <Users className="text-red-700 dark:text-red-500 w-8 h-8" /> All System
+        Users (Blood Management)
+      </h1>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">
+        A comprehensive list of all registered users in the system, categorized
+        for quick insights.
+      </p>
 
-        {/* 💥 1. USER COUNTS BY ROLE CATEGORY 💥 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {/* Total Users Card */}
-          <div className="bg-gray-50 p-4 rounded-lg shadow border-l-4 border-gray-500 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 uppercase">
-                Total Users
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-            </div>
-            <Users className="w-8 h-8 text-gray-400" />
+      {/* USER COUNTS BY ROLE CATEGORY (Dark Mode applied to backgrounds/colors) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Total Users Card */}
+        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow border-l-4 border-gray-500 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-300 uppercase">
+              Total Users
+            </p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {users.length}
+            </p>
           </div>
-
-          {/* Admin Card */}
-          <div className="bg-red-50 p-4 rounded-lg shadow border-l-4 border-red-500 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-red-500 uppercase">
-                Admins
-              </p>
-              <p className="text-2xl font-bold text-red-700">
-                {countUsersByRole("admin")}
-              </p>
-            </div>
-            <User className="w-8 h-8 text-red-400" />
-          </div>
-
-          {/* Donor Card */}
-          <div className="bg-blue-50 p-4 rounded-lg shadow border-l-4 border-blue-500 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-500 uppercase">
-                Potential Donors
-              </p>
-              <p className="text-2xl font-bold text-blue-700">
-                {countUsersByRole("donor")}
-              </p>
-            </div>
-            <HeartHandshake className="w-8 h-8 text-blue-400" />
-          </div>
-
-          {/* Staff Card (Grouping all non-admin, non-donor roles) */}
-          <div className="bg-green-50 p-4 rounded-lg shadow border-l-4 border-green-500 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-500 uppercase">
-                Staff Total
-              </p>
-              <p className="text-2xl font-bold text-green-700">
-                {getTotalStaffCount()}
-              </p>
-            </div>
-            <Stethoscope className="w-8 h-8 text-green-400" />
-          </div>
+          <Users className="w-8 h-8 text-gray-400" />
         </div>
 
-        {/* Search Input */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or role..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-500 transition duration-150"
-          />
+        {/* Admin Card */}
+        <div className="bg-red-50 dark:bg-red-900/50 p-4 rounded-lg shadow border-l-4 border-red-500 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-red-500 dark:text-red-300 uppercase">
+              Admins
+            </p>
+            <p className="text-2xl font-bold text-red-700 dark:text-red-400">
+              {countUsersByRole("admin")}
+            </p>
+          </div>
+          <User className="w-8 h-8 text-red-400" />
         </div>
 
-        {/* Table Container */}
-        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-md">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-red-50">
-              <tr>
-                {/* 💥 2. NEW NUMBER COLUMN 💥 */}
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  #
-                </th>
-                {/* Name Header */}
-                <th
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-red-100"
-                  onClick={() => requestSort("name")}
+        {/* Donor Card */}
+        <div className="bg-blue-50 dark:bg-blue-900/50 p-4 rounded-lg shadow border-l-4 border-blue-500 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-blue-500 dark:text-blue-300 uppercase">
+              Potential Donors
+            </p>
+            <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+              {countUsersByRole("donor")}
+            </p>
+          </div>
+          <HeartHandshake className="w-8 h-8 text-blue-400" />
+        </div>
+
+        {/* Staff Card */}
+        <div className="bg-green-50 dark:bg-green-900/50 p-4 rounded-lg shadow border-l-4 border-green-500 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-green-500 dark:text-green-300 uppercase">
+              Staff Total
+            </p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+              {getTotalStaffCount()}
+            </p>
+          </div>
+          <Stethoscope className="w-8 h-8 text-green-400" />
+        </div>
+      </div>
+
+      {/* Search Input (Dark Mode applied) */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+        <input
+          type="text"
+          placeholder="Search by name, email, or role..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 text-gray-900 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-500 transition duration-150"
+        />
+      </div>
+
+      {/* Table Container (Dark Mode applied) */}
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-md">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-red-50 dark:bg-red-800/50">
+            <tr>
+              {/* # Column */}
+              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                #
+              </th>
+              {/* Name Header */}
+              <th
+                className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-red-100 dark:hover:bg-red-800"
+                onClick={() => requestSort("name")}
+              >
+                Name {getSortIcon("name")}
+              </th>
+              {/* Email Header */}
+              <th
+                className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-red-100 dark:hover:bg-red-800 hidden sm:table-cell"
+                onClick={() => requestSort("email")}
+              >
+                Email {getSortIcon("email")}
+              </th>
+              {/* Role Header */}
+              <th
+                className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-red-100 dark:hover:bg-red-800"
+                onClick={() => requestSort("role")}
+              >
+                Role {getSortIcon("role")}
+              </th>
+              {/* Actions Header */}
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user, index) => (
+                <tr
+                  key={user._id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-100"
                 >
-                  Name {getSortIcon("name")}
-                </th>
-                {/* Email Header */}
-                <th
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-red-100 hidden sm:table-cell"
-                  onClick={() => requestSort("email")}
-                >
-                  Email {getSortIcon("email")}
-                </th>
-                {/* Role Header */}
-                <th
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-red-100"
-                  onClick={() => requestSort("role")}
-                >
-                  Role {getSortIcon("role")}
-                </th>
-                {/* Actions (Placeholder for future actions like Edit/Delete) */}
-                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user, index) => (
-                  <tr
-                    key={user._id}
-                    className="hover:bg-gray-50 transition duration-100"
-                  >
-                    {/* 💥 NEW NUMBER CELL 💥 */}
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                      {index + 1}
-                    </td>
-                    {/* Name Cell */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {user.name}
-                    </td>
-                    {/* Email Cell */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
-                      {user.email}
-                    </td>
-                    {/* Role Cell */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.role === "admin"
-                            ? "bg-red-100 text-red-800"
-                            : user.role === "donor"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {formatRole(user.role)}
-                      </span>
-                    </td>
-                    {/* Actions Cell */}
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <button
-                        className="text-red-600 hover:text-red-900 transition duration-150 mr-3"
-                        onClick={() => handleEditClick(user)} // Correctly calls the handler
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-gray-600 hover:text-red-700 transition duration-150" // Changed hover color to red for delete
-                        onClick={() => handleDelete(user._id, user.name)} // New Delete handler
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="5" // Updated colspan to 5 for the new '#' column
-                    className="px-6 py-10 text-center text-gray-500 text-lg"
-                  >
-                    {users.length > 0
-                      ? "No users match your search criteria."
-                      : "No users found in the system."}
+                  {/* # Cell */}
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                    {index + 1}
+                  </td>
+                  {/* Name Cell */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    {user.name}
+                  </td>
+                  {/* Email Cell */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">
+                    {user.email}
+                  </td>
+                  {/* Role Cell */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.role === "admin"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          : user.role === "donor"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                          : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                      }`}
+                    >
+                      {formatRole(user.role)}
+                    </span>
+                  </td>
+                  {/* Actions Cell */}
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button
+                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition duration-150 mr-3"
+                      onClick={() => handleEditClick(user)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-gray-600 hover:text-red-700 dark:text-gray-400 dark:hover:text-red-500 transition duration-150"
+                      onClick={() => handleDelete(user._id, user.name)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="px-6 py-10 text-center text-gray-500 dark:text-gray-400 text-lg"
+                >
+                  {users.length > 0
+                    ? "No users match your search criteria."
+                    : "No users found in the system."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Conditional Modal Render */}
@@ -394,7 +384,7 @@ const UserListPage = () => {
           onUserUpdated={handleUserUpdated}
         />
       )}
-    </DashboardLayout>
+    </div>
   );
 };
 

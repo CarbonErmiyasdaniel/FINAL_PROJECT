@@ -5,7 +5,7 @@ import { FaLanguage, FaSignInAlt, FaTint } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../../context/useAuth.js";
+import { useAuth } from "../../../context/useAuth.js";
 
 // NOTE: Ensure your tailwind.config.js still contains the 'slide-in' animation for the left panel.
 
@@ -78,14 +78,11 @@ const Signin = () => {
       setTimeout(() => {
         if (role === "admin") navigate("/admin");
         else if (role === "nurse") navigate("/nurse");
-        else if (role === "donor") navigate("/dashboard/doner");
-        else if (role === "lab_technician")
-          navigate("/dashboard/lab_technician");
-        else if (role === "post_counselor")
-          navigate("/dashboard/post_counselor");
-        else if (role === "hospital_staff")
-          navigate("/dashbord/hospital_staff");
-        else navigate("/dashboard/donor");
+        else if (role === "donor") navigate("/donor");
+        else if (role === "lab_technician") navigate("/lab_technician");
+        else if (role === "post_counselor") navigate("/post_counselor");
+        else if (role === "hospital_staff") navigate("/hospital_staff");
+        else navigate("/hospital_staff"); // Default fallback
       }, 1500);
     } catch (err) {
       toast.error(err.response?.data?.msg || current.serverError);

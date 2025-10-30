@@ -70,10 +70,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 
-// -----------------------------------------------------------------
-// ROLE-SPECIFIC AUTHENTICATION FACTORY (Original Code)
-// -----------------------------------------------------------------
-
 /**
  * Middleware factory to authenticate users with a specific role.
  * @param {string} requiredRole - The role the user must have to access the route.
@@ -202,4 +198,15 @@ export const authProtect = async (req, res, next) => {
 // Export specific middleware functions for each role (Original Exports)
 export const authAdmin = authenticate("admin");
 export const authNurse = authenticate("nurse");
+export const authDonor = authenticate("donor");
+export const authLabTechnician = authenticate("lab_technician");
+export const authPostCounselor = authenticate("post_counselor");
+export const authHospitalStaff = authenticate("hospital_staff");
+
 // authProtect is also exported above.
+// "admin",
+/*   "nurse",
+        "lab_technician",
+        "post_counselor",
+        "hospital_staff",
+        "donor",*/
