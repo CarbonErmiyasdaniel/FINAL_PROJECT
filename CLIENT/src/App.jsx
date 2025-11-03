@@ -68,6 +68,12 @@ const App = () => {
               <WrappedAdminDashboard pageKey="/admin/NurseActivityReports" />
             }
           />
+          <Route
+            path="UserStatsDashboard"
+            element={
+              <WrappedAdminDashboard pageKey="/admin/UserStatsDashboard" />
+            }
+          />
         </Route>
         /////////////////////////////////////////
         <Route element={<ProtectedRoute allowedRoles={["nurse"]} />}>
