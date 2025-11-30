@@ -81,7 +81,7 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     const updateFields = { name, email, role };
     if (password) {
@@ -125,63 +125,113 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Get detailed blood inventory
-// @route   GET /api/admin/inventory
-export const getBloodInventory = async (req, res) => {
-  try {
-    const bloodInventory = await BloodInventory.find({}, { _id: 0, __v: 0 });
-    res.json(bloodInventory);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
-
-// @desc    Get all hospital requests
+// @desc   // @desc    Get all hospital requests
 // @route   GET /api/admin/requests
-export const getHospitalRequests = async (req, res) => {
-  try {
-    const hospitalRequests = await HospitalRequest.find({}, { _id: 0, __v: 0 });
-    res.json(hospitalRequests);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
+///////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\
+// export const getHospitalRequests = async (req, res) => {
+//   try {
+//     const hospitalRequests = await HospitalRequest.find({}).select("-__v");
+//     console.log(
+//       " Admin fetching hospital requests. Found:",
+//       hospitalRequests.length
+//     );
+//     res.json(hospitalRequests);
+//   } catch (err) {
+//     console.error("Error fetching hospital requests:", err.message);
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// };
 
-// @desc    Update the status of a hospital request
-// @route   PUT /api/admin/requests/:requestId/status
-export const updateRequestStatus = async (req, res) => {
-  const { requestId } = req.params;
-  const { status } = req.body;
+// // @desc    Update the status of a hospital request
+// // @route   PUT /api/admin/requests/:requestId/status
+// export const updateRequestStatus = async (req, res) => {
+//   const { requestId } = req.params;
+//   const { status, rejectionReason } = req.body;
 
-  try {
-    const validStatuses = ["Pending", "Fulfilled", "Rejected"];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        msg: "Invalid status. Valid statuses are: Pending, Fulfilled, or Rejected.",
-      });
-    }
+//   try {
+//     const validStatuses = ["Pending", "Fulfilled", "Rejected"];
+//     if (!validStatuses.includes(status)) {
+//       return res.status(400).json({
+//         msg: "Invalid status. Valid statuses are: Pending, Fulfilled, or Rejected.",
+//       });
+//     }
 
-    const updatedRequest = await HospitalRequest.findByIdAndUpdate(
-      requestId,
-      { status },
-      { new: true, fields: { _id: 0, __v: 0 } }
-    );
+//     // If rejecting, require a reason
+//     if (status === "Rejected" && !rejectionReason) {
+//       return res.status(400).json({
+//         msg: "Rejection reason is required when rejecting a request.",
+//       });
+//     }
 
-    if (!updatedRequest) {
-      return res.status(404).json({ msg: "Request not found." });
-    }
+//     const updateData = {
+//       status,
+//       processedBy: req.user._id,
+//       processedAt: new Date(),
+//     };
 
-    res.json(updatedRequest);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
+//     if (status === "Rejected" && rejectionReason) {
+//       updateData.rejectionReason = rejectionReason;
+//     }
 
+//     const updatedRequest = await HospitalRequest.findByIdAndUpdate(
+//       requestId,
+//       updateData,
+//       { new: true }
+//     ).select("-__v");
+
+//     if (!updatedRequest) {
+//       return res.status(404).json({ msg: "Request not found." });
+//     }
+
+//     console.log(` Request ${status} by admin:`, requestId);
+//     res.json(updatedRequest);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// };
+// ////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 // @desc    Get nurse activity reports
 // @route   GET /api/admin/reports/nurse-activity
+// controllers/adminController.js
+export const getHospitalRequests = async (req, res) => {
+  try {
+    const requests = await HospitalRequest.find({})
+      .populate("requestedBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(requests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const updateRequestStatus = async (req, res) => {
+  const { status } = req.body;
+  const valid = ["Fulfilled", "Rejected"];
+
+  if (!valid.includes(status)) {
+    return res.status(400).json({ msg: "Invalid status" });
+  }
+
+  try {
+    const request = await HospitalRequest.findById(req.params.requestId);
+
+    if (!request) return res.status(404).json({ msg: "Request not found" });
+
+    request.status = status;
+    request.processedBy = req.user._id; // ← NOW WORKS!
+    request.processedAt = Date.now();
+
+    await request.save();
+
+    res.json({ msg: "Status updated", request });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
 
 export const getNurseActivityReports = async (req, res) => {
   try {
@@ -222,5 +272,27 @@ export const getNurseReportById = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const getAllHospitalRequests = async (req, res) => {
+  try {
+    // 1. Fetch all requests from the database
+    // Optional: Use .sort({ requestDate: -1 }) to show latest requests first
+    const requests = await HospitalRequest.find({});
+
+    // 2. Check if any requests were found
+    if (requests.length === 0) {
+      return res.status(404).json({ message: "No hospital requests found." });
+    }
+
+    // 3. Send successful response
+    res.status(200).json({
+      count: requests.length,
+      requests,
+    });
+  } catch (error) {
+    console.error(`Error fetching hospital requests: ${error.message}`);
+    res.status(500).json({ message: "Server error fetching requests." });
   }
 };

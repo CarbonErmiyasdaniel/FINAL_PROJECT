@@ -1,20 +1,369 @@
+// import React, { useState, useEffect } from "react";
+// import { useNavigate, useParams } from "react-router-dom";
+// import {
+//   Menu,
+//   X,
+//   Home,
+//   UserPlus,
+//   Users,
+//   FileText,
+//   Settings,
+//   Heart,
+//   User,
+// } from "lucide-react";
+
+// import DashboardLayout from "./DashboardLayout";
+// import Donor_Register from "../Features/nurse/Donor_Register.jsx";
+// import Donor_List from "../Features/nurse/NurseListPage.jsx";
+// import RegisterDonorPersonalInfo from "../Features/nurse/RegisterDonorPersonalInfo.jsx";
+// import UpdateDonorPersonalInfo from "../Features/nurse/UpdateDonorPersonalInfo.jsx";
+// import RegisterDonation from "../Features/nurse/RegisterDonation.jsx";
+// import NurseReportForm from "../Features/nurse/NurseReport.jsx";
+
+// /* ==================== SIDEBAR BUTTON (Same as Admin) ==================== */
+// const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => {
+//   const baseClasses = `relative flex items-center h-12 w-full transition-all duration-300 ease-in-out font-medium text-white rounded-lg group hover:bg-red-700/50 hover:shadow-md`;
+//   const activeClasses = isActive
+//     ? "bg-red-800/80 shadow-inner ring-2 ring-white/50"
+//     : "bg-transparent";
+//   const paddingClasses = isExpanded ? "px-5 justify-start" : "justify-center";
+
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={`${baseClasses} ${activeClasses} ${paddingClasses}`}
+//     >
+//       {isActive && isExpanded && (
+//         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full -translate-x-1"></span>
+//       )}
+
+//       <span className="flex-shrink-0">
+//         {React.cloneElement(icon, {
+//           className: `w-5 h-5 transition-colors ${
+//             isActive ? "text-white" : "text-red-300 group-hover:text-white"
+//           }`,
+//         })}
+//       </span>
+
+//       <span
+//         className={`ml-4 text-sm whitespace-nowrap transition-opacity duration-300 ${
+//           isExpanded ? "opacity-100" : "opacity-0 hidden"
+//         }`}
+//       >
+//         {label}
+//       </span>
+
+//       {!isExpanded && (
+//         <div className="absolute left-full ml-4 p-2 min-w-max bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+//           {label}
+//         </div>
+//       )}
+//     </button>
+//   );
+// };
+
+// /* ==================== SIDEBAR (Exact Admin Style) ==================== */
+// const Sidebar = ({
+//   isOpen,
+//   onMouseEnter,
+//   onMouseLeave,
+//   onClose,
+//   isDesktop,
+//   children,
+// }) => (
+//   <>
+//     <aside
+//       onMouseEnter={onMouseEnter}
+//       onMouseLeave={onMouseLeave}
+//       className={`
+//         fixed inset-y-0 left-0 z-50 transform h-full shadow-2xl transition-all duration-300 ease-in-out
+//         border-r border-red-900/50 flex flex-col
+//         bg-gradient-to-br from-[#A51B27] to-red-900
+//         ${isDesktop ? (isOpen ? "sm:w-72" : "sm:w-20") : "w-72"}
+//         ${!isDesktop ? (isOpen ? "translate-x-0" : "-translate-x-full") : ""}
+//       `}
+//     >
+//       <div
+//         className="space-y-6 flex-shrink-0"
+//         style={{ padding: isOpen || !isDesktop ? "1.5rem" : "1.5rem 0.5rem" }}
+//       >
+//         <div
+//           className={`flex items-center justify-between transition-opacity ${
+//             isOpen || !isDesktop
+//               ? "opacity-100"
+//               : "opacity-0 h-0 overflow-hidden"
+//           }`}
+//         >
+//           <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
+//             <Heart className="h-7 w-7 mr-2 text-white fill-current" />
+//             NURSE PANEL
+//           </h1>
+//           {!isDesktop && (
+//             <button
+//               onClick={onClose}
+//               className="p-2 text-red-200 hover:text-white rounded-lg"
+//             >
+//               <X className="w-6 h-6" />
+//             </button>
+//           )}
+//         </div>
+
+//         <div className="pt-4 border-t border-red-700">
+//           <div
+//             className={`flex items-center rounded-lg ${
+//               isOpen ? "justify-start" : "justify-center"
+//             }`}
+//           >
+//             <div className="relative group">
+//               <img
+//                 src="https://via.placeholder.com/48/FFFFFF/A51B27?text=NS"
+//                 alt="Nurse"
+//                 className={`w-12 h-12 rounded-full border-3 border-white/70 ${
+//                   !isOpen && isDesktop ? "scale-90" : "scale-100"
+//                 }`}
+//               />
+//               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+//                 {isOpen ? "Edit" : <User className="w-4 h-4" />}
+//               </div>
+//             </div>
+//             <div
+//               className={`ml-4 transition-opacity ${
+//                 isOpen ? "opacity-100" : "opacity-0 hidden"
+//               }`}
+//             >
+//               <p className="font-semibold text-white">Nurse Selamawit</p>
+//               <p className="text-xs text-red-200">Blood Bank Nurse</p>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div
+//         className="flex-1 overflow-y-auto space-y-4"
+//         style={{
+//           padding: isOpen || !isDesktop ? "0 1.5rem 1.5rem" : "0 0.5rem 1.5rem",
+//         }}
+//       >
+//         {children}
+//       </div>
+//     </aside>
+
+//     {isOpen && !isDesktop && (
+//       <div
+//         onClick={onClose}
+//         className="fixed inset-0 bg-black opacity-60 z-40"
+//       ></div>
+//     )}
+//   </>
+// );
+
+// /* ==================== MAIN NURSE DASHBOARD ==================== */
+// const NewNurseDashboard = ({ pageKey }) => {
+//   const navigate = useNavigate();
+//   const { userId } = useParams();
+//   const [currentPage, setCurrentPage] = useState(pageKey || "/nurse/dashboard");
+//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+//   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+
+//   useEffect(() => {
+//     if (pageKey) setCurrentPage(pageKey);
+//   }, [pageKey]);
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       const desktop = window.innerWidth >= 768;
+//       setIsDesktop(desktop);
+//       setIsSidebarOpen(desktop);
+//     };
+//     handleResize();
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   const handleNavigate = (path) => {
+//     setCurrentPage(path);
+//     navigate(path);
+//     if (!isDesktop) setIsSidebarOpen(false);
+//   };
+
+//   const RenderPage = () => {
+//     const Container = ({ children }) => (
+//       <div className="p-6 lg:p-10 min-h-screen bg-gray-50">{children}</div>
+//     );
+
+//     // Dynamic routes
+//     if (currentPage.includes("/registerDonorInfo/") && userId)
+//       return (
+//         <Container>
+//           <RegisterDonorPersonalInfo userId={userId} />
+//         </Container>
+//       );
+//     if (currentPage.includes("/updateDonorInfo/") && userId)
+//       return (
+//         <Container>
+//           <UpdateDonorPersonalInfo userId={userId} />
+//         </Container>
+//       );
+//     if (currentPage.includes("/RegisterDonation/") && userId)
+//       return (
+//         <Container>
+//           <RegisterDonation userId={userId} />
+//         </Container>
+//       );
+
+//     switch (currentPage) {
+//       case "/nurse/dashboard":
+//         return (
+//           <Container>
+//             <div className="max-w-7xl mx-auto">
+//               <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+//                 Welcome Back, Nurse!
+//               </h1>
+//               <p className="text-lg text-gray-600 mb-10">
+//                 Manage donors and save lives today
+//               </p>
+//               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+//                 <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+//                   <UserPlus className="w-20 h-20 text-red-600 mx-auto mb-4" />
+//                   <h3 className="text-2xl font-bold">Register Donor</h3>
+//                 </div>
+//                 <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+//                   <Users className="w-20 h-20 text-blue-600 mx-auto mb-4" />
+//                   <h3 className="text-2xl font-bold">Donor List</h3>
+//                 </div>
+//                 <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+//                   <FileText className="w-20 h-20 text-green-600 mx-auto mb-4" />
+//                   <h3 className="text-2xl font-bold">Daily Report</h3>
+//                 </div>
+//               </div>
+//             </div>
+//           </Container>
+//         );
+
+//       case "/nurse/Donor_Register":
+//         return (
+//           <Container>
+//             <Donor_Register />
+//           </Container>
+//         );
+//       case "/nurse/Donor_List":
+//         return (
+//           <Container>
+//             <Donor_List />
+//           </Container>
+//         );
+//       case "/nurse/writeReport/":
+//         return (
+//           <Container>
+//             <NurseReportForm />
+//           </Container>
+//         );
+//       default:
+//         return (
+//           <Container>
+//             <div className="text-center text-3xl text-gray-500">
+//               Page Not Found
+//             </div>
+//           </Container>
+//         );
+//     }
+//   };
+
+//   return (
+//     <div className="flex h-screen bg-gray-100">
+//       <Sidebar
+//         isOpen={isSidebarOpen}
+//         onMouseEnter={() => isDesktop && setIsSidebarOpen(true)}
+//         onMouseLeave={() => isDesktop && setIsSidebarOpen(false)}
+//         onClose={() => setIsSidebarOpen(false)}
+//         isDesktop={isDesktop}
+//       >
+//         <SidebarButton
+//           onClick={() => handleNavigate("/nurse/dashboard")}
+//           icon={<Home />}
+//           label="Dashboard"
+//           isExpanded={isSidebarOpen}
+//           isActive={currentPage.includes("/dashboard")}
+//         />
+//         <SidebarButton
+//           onClick={() => handleNavigate("/nurse/Donor_Register")}
+//           icon={<UserPlus />}
+//           label="Add New Donor"
+//           isExpanded={isSidebarOpen}
+//           isActive={currentPage === "/nurse/Donor_Register"}
+//         />
+//         <SidebarButton
+//           onClick={() => handleNavigate("/nurse/Donor_List")}
+//           icon={<Users />}
+//           label="Donor List"
+//           isExpanded={isSidebarOpen}
+//           isActive={currentPage === "/nurse/Donor_List"}
+//         />
+//         <SidebarButton
+//           onClick={() => handleNavigate("/nurse/writeReport/")}
+//           icon={<FileText />}
+//           label="Daily Report"
+//           isExpanded={isSidebarOpen}
+//           isActive={currentPage === "/nurse/writeReport/"}
+//         />
+//         <SidebarButton
+//           onClick={() => handleNavigate("/nurse/settings")}
+//           icon={<Settings />}
+//           label="Settings"
+//           isExpanded={isSidebarOpen}
+//           isActive={currentPage === "/nurse/settings"}
+//         />
+//       </Sidebar>
+
+//       <main
+//         className={`flex-1 overflow-y-auto transition-all duration-300 ${
+//           isDesktop ? (isSidebarOpen ? "sm:ml-72" : "sm:ml-20") : ""
+//         }`}
+//       >
+//         <div className="p-4 lg:p-8">
+//           <RenderPage />
+//         </div>
+//       </main>
+
+//       {/* Mobile Menu Button */}
+//       {!isDesktop && (
+//         <button
+//           onClick={() => setIsSidebarOpen(true)}
+//           className="fixed bottom-6 right-6 bg-red-700 text-white p-4 rounded-full shadow-2xl z-40 hover:bg-red-800 transition"
+//         >
+//           <Menu className="w-7 h-7" />
+//         </button>
+//       )}
+//     </div>
+//   );
+// };
+
+// const WrappedNewNurseDashboard = (props) => (
+//   <DashboardLayout>
+//     <NewNurseDashboard {...props} />
+//   </DashboardLayout>
+// );
+
+// export default WrappedNewNurseDashboard;
+////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+// src/pages/NurseDashboard.jsx (or wherever you have it)
+
+// src/pages/NurseDashboard.jsx
+// src/pages/NurseDashboard.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Menu,
   X,
-  Stethoscope, // Icon for patient/treatment
-  Heart, // Icon for donor/blood
-  ClipboardList, // Icon for records/vitals
-  Settings,
-  UserPlus, // Icon for Add Donor
-  Users, // Icon for Donor List
-  Thermometer, // Icon for Active Cases
-  AlertTriangle, // Icon for Critical Alerts
   Home,
+  UserPlus,
+  Users,
+  FileText,
+  Settings,
+  Heart,
+  Camera,
 } from "lucide-react";
 
-// Assuming these are available globally or imported from a shared file
 import DashboardLayout from "./DashboardLayout";
 import Donor_Register from "../Features/nurse/Donor_Register.jsx";
 import Donor_List from "../Features/nurse/NurseListPage.jsx";
@@ -22,54 +371,43 @@ import RegisterDonorPersonalInfo from "../Features/nurse/RegisterDonorPersonalIn
 import UpdateDonorPersonalInfo from "../Features/nurse/UpdateDonorPersonalInfo.jsx";
 import RegisterDonation from "../Features/nurse/RegisterDonation.jsx";
 import NurseReportForm from "../Features/nurse/NurseReport.jsx";
-// --- SHARED COMPONENT: MetricCard (Styled to match AdminDashboard) ---
-const MetricCard = ({ title, value, icon, color = "blue" }) => (
-  <div
-    className={`p-5 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-l-4 border-${color}-600 transition-all duration-300 hover:shadow-2xl`}
-  >
-    <div className="flex items-center">
-      <div
-        className={`flex items-center justify-center p-3 text-white bg-${color}-600 rounded-lg mr-4`}
-      >
-        {icon}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {title}
-        </p>
-        <p className="text-3xl font-extrabold text-gray-900 dark:text-white">
-          {value}
-        </p>
-      </div>
-    </div>
-  </div>
-);
 
-// --- SHARED COMPONENT: SidebarButton (Styled to match AdminDashboard) ---
-const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => (
-  <button
-    onClick={onClick}
-    className={`group flex items-center justify-start text-white font-semibold py-3 px-4 rounded-none shadow-lg transition-all duration-300
-      ${
-        isActive
-          ? "bg-red-800 hover:bg-red-900 border-l-4 border-white"
-          : "bg-red-700 hover:bg-red-800"
-      }
-      ${!isExpanded ? "justify-center w-full" : "w-full"}
-    `}
-  >
-    {icon}
-    <span
-      className={`ml-3 transition-opacity duration-300 ${
-        isExpanded ? "opacity-100 block" : "opacity-0 hidden"
-      }`}
+/* ==================== SIDEBAR BUTTON ==================== */
+const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative flex items-center h-12 w-full transition-all duration-300 font-medium text-white rounded-lg group hover:bg-red-700/50 hover:shadow-md ${
+        isActive ? "bg-red-800/80 shadow-inner ring-2 ring-white/50" : ""
+      } ${isExpanded ? "px-5 justify-start" : "justify-center"}`}
     >
-      {label}
-    </span>
-  </button>
-);
+      {isActive && isExpanded && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full -translate-x-1"></span>
+      )}
+      <span className="flex-shrink-0">
+        {React.cloneElement(icon, {
+          className: `w-5 h-5 ${
+            isActive ? "text-white" : "text-red-300 group-hover:text-white"
+          }`,
+        })}
+      </span>
+      <span
+        className={`ml-4 text-sm ${
+          isExpanded ? "opacity-100" : "opacity-0 hidden"
+        }`}
+      >
+        {label}
+      </span>
+      {!isExpanded && (
+        <div className="absolute left-full ml-4 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+          {label}
+        </div>
+      )}
+    </button>
+  );
+};
 
-// --- SHARED COMPONENT: Sidebar (Adapted from AdminDashboard) ---
+/* ==================== SIDEBAR - NOW SHOWS BUTTONS! ==================== */
 const Sidebar = ({
   isOpen,
   onMouseEnter,
@@ -78,358 +416,349 @@ const Sidebar = ({
   isDesktop,
   children,
 }) => {
+  const [nurseName, setNurseName] = useState(
+    () => localStorage.getItem("nurseName") || "Nurse Selamawit"
+  );
+  const [profilePic, setProfilePic] = useState(
+    () => localStorage.getItem("nursePhoto") || null
+  );
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(nurseName);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      setProfilePic(dataUrl);
+      localStorage.setItem("nursePhoto", dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveName = () => {
+    if (tempName.trim()) {
+      setNurseName(tempName.trim());
+      localStorage.setItem("nurseName", tempName.trim());
+    }
+    setIsEditingName(false);
+  };
+
   return (
     <>
       <aside
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className={`
-          fixed inset-y-0 left-0 z-50 transform 
-          h-full bg-white dark:bg-gray-900 shadow-2xl transition-all duration-300 ease-in-out
-          border-r border-gray-200 dark:border-gray-700
-          
-          sm:static sm:h-auto 
-          ${isDesktop ? (isOpen ? "sm:w-80" : "sm:w-20") : "w-80"}
+        className={`fixed inset-y-0 left-0 z-50 h-full shadow-2xl transition-all duration-300 border-r border-red-900/50 flex flex-col
+          bg-gradient-to-br from-[#A51B27] to-red-900
+          ${isDesktop ? (isOpen ? "sm:w-72" : "sm:w-20") : "w-72"}
           ${!isDesktop ? (isOpen ? "translate-x-0" : "-translate-x-full") : ""}
         `}
       >
+        {/* HEADER + PROFILE */}
         <div
-          className="flex flex-col h-full space-y-6 overflow-y-auto"
+          className="space-y-6 flex-shrink-0"
           style={{ padding: isOpen || !isDesktop ? "1.5rem" : "1.5rem 0.5rem" }}
         >
           <div
-            className={`items-center justify-between mb-4 ${
-              isDesktop ? "hidden" : "flex"
+            className={`flex items-center justify-between ${
+              isOpen || !isDesktop ? "opacity-100" : "opacity-0 h-0"
             }`}
           >
-            <h1 className="text-2xl font-bold text-red-600">Nurse Panel</h1>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 rounded-lg transition-colors"
-              aria-label="Close sidebar"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
+              <Heart className="h-7 w-7 mr-2 fill-current" />
+              NURSE PANEL
+            </h1>
+            {!isDesktop && (
+              <button
+                onClick={onClose}
+                className="p-2 text-red-200 hover:text-white rounded-lg"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            )}
           </div>
-          {children}
+
+          {/* PROFILE PHOTO + NAME */}
+          <div className="pt-4 border-t border-red-700">
+            <div
+              className={`flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              }`}
+            >
+              <div className="relative group">
+                <label htmlFor="profile-upload" className="cursor-pointer">
+                  <div className="w-14 h-14 rounded-full border-4 border-white/70 shadow-lg overflow-hidden">
+                    {profilePic ? (
+                      <img
+                        src={profilePic}
+                        alt="Nurse"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-white to-gray-300 flex items-center justify-center text-red-700 font-bold text-2xl">
+                        NS
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-full flex items-center justify-center transition">
+                    <Camera className="w-6 h-6 text-white" />
+                  </div>
+                </label>
+                <input
+                  id="profile-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+
+              <div className={`ml-4 ${isOpen ? "block" : "hidden"}`}>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={tempName}
+                      onChange={(e) => setTempName(e.target.value)}
+                      className="px-2 py-1 text-sm bg-red-800/50 text-white rounded border border-red-400 focus:outline-none focus:border-white"
+                      onKeyPress={(e) => e.key === "Enter" && saveName()}
+                      autoFocus
+                    />
+                    <button
+                      onClick={saveName}
+                      className="text-green-300 hover:text-white text-xs"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditingName(false)}
+                      className="text-red-300 hover:text-white text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-bold text-white flex items-center gap-2">
+                      {nurseName}
+                      <button
+                        onClick={() => {
+                          setTempName(nurseName);
+                          setIsEditingName(true);
+                        }}
+                        className="text-xs opacity-70 hover:opacity-100"
+                      >
+                        Edit
+                      </button>
+                    </p>
+                    <p className="text-xs text-red-200">Blood Bank Nurse</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* THIS IS THE KEY: {children} renders all your buttons! */}
+        <nav className="flex-1 overflow-y-auto space-y-2 px-3 pb-4">
+          {children}
+        </nav>
       </aside>
+
+      {/* Mobile Overlay */}
       {isOpen && !isDesktop && (
         <div
           onClick={onClose}
           className="fixed inset-0 bg-black opacity-60 z-40"
-          aria-hidden="true"
         ></div>
       )}
     </>
   );
 };
 
-// --- Main Application Component (NewNurseDashboard) ---
+/* ==================== MAIN NURSE DASHBOARD ==================== */
 const NewNurseDashboard = ({ pageKey }) => {
   const navigate = useNavigate();
+  const { userId } = useParams();
   const [currentPage, setCurrentPage] = useState(pageKey || "/nurse/dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   useEffect(() => {
-    if (pageKey) {
-      setCurrentPage(pageKey);
-    }
+    if (pageKey) setCurrentPage(pageKey);
   }, [pageKey]);
 
   useEffect(() => {
     const handleResize = () => {
-      const desktopMode = window.innerWidth >= 640;
-      setIsDesktop(desktopMode);
-
-      if (!desktopMode) {
-        setIsSidebarOpen(false);
-      }
+      const desktop = window.innerWidth >= 768;
+      setIsDesktop(desktop);
+      setIsSidebarOpen(desktop);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleSidebar = () => {
-    if (!isDesktop) {
-      setIsSidebarOpen((prev) => !prev);
-    }
-  };
-
-  const handleMouseEnter = () => {
-    if (isDesktop) {
-      setIsSidebarOpen(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (isDesktop) {
-      setIsSidebarOpen(false);
-    }
-  };
-
   const handleNavigate = (path) => {
-    if (!isDesktop) {
-      setIsSidebarOpen(false);
-    }
     setCurrentPage(path);
     navigate(path);
+    if (!isDesktop) setIsSidebarOpen(false);
   };
 
-  const DashboardContent = () => (
-    <>
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-1">
-            Nurse Operations Panel 👩‍⚕️
-          </h1>
-          <p className="text-md text-gray-600 dark:text-gray-400">
-            Real-Time Patient & Resource Management
-          </p>
-        </div>
-        <button
-          onClick={() => handleNavigate("/nurse/add_donor")}
-          className="flex items-center bg-blue-700 text-white font-bold py-3 px-6 rounded-none shadow-lg transition-all duration-300 hover:bg-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50 transform hover:-translate-y-px"
-        >
-          <UserPlus className="w-5 h-5 mr-2" /> Add New Donor
-        </button>
-      </div>
-      <hr className="border-gray-300 dark:border-gray-600 mb-8" />
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        Current Patient Metrics
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <MetricCard
-          title="Patients Assigned"
-          color="indigo"
-          value="18"
-          icon={<Stethoscope className="h-6 w-6" />}
-        />
-        <MetricCard
-          title="Medication Queue"
-          value="45 Tasks"
-          color="red"
-          icon={<ClipboardList className="h-6 w-6" />}
-        />
-        <MetricCard
-          title="Active Cases"
-          value="4"
-          color="yellow"
-          icon={<Thermometer className="h-6 w-6" />}
-        />
-        <MetricCard
-          title="Critical Alerts"
-          value="1"
-          color="orange"
-          icon={<AlertTriangle className="h-6 w-6" />}
-        />
-      </div>
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Scheduled Treatments Overview
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          *A detailed list/table of patient vital signs and treatment schedules
-          would go here to match the data-heavy look of an Admin dashboard.*
-        </p>
-      </div>
-    </>
-  );
-
   const RenderPage = () => {
-    const ViewContainer = ({ children }) => (
-      <div className="p-8 lg:p-10">{children}</div>
+    const Container = ({ children }) => (
+      <div className="p-6 lg:p-10 min-h-screen bg-gray-50">{children}</div>
     );
 
-    const SimpleContent = ({ title }) => (
-      <ViewContainer>
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-          {title}
-        </h1>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">
-          Content for the **{title}** route is rendered here.
-        </p>
-        <p className="mt-8 text-sm font-mono text-blue-600 dark:text-blue-400">
-          Current Simulated Route: {currentPage}
-        </p>
-      </ViewContainer>
-    );
+    if (currentPage.includes("/registerDonorInfo/") && userId)
+      return (
+        <Container>
+          <RegisterDonorPersonalInfo userId={userId} />
+        </Container>
+      );
+    if (currentPage.includes("/updateDonorInfo/") && userId)
+      return (
+        <Container>
+          <UpdateDonorPersonalInfo userId={userId} />
+        </Container>
+      );
+    if (currentPage.includes("/RegisterDonation/") && userId)
+      return (
+        <Container>
+          <RegisterDonation userId={userId} />
+        </Container>
+      );
 
     switch (currentPage) {
       case "/nurse/dashboard":
         return (
-          <ViewContainer>
-            <DashboardContent />
-          </ViewContainer>
+          <Container>
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+                Welcome Back, Nurse!
+              </h1>
+              <p className="text-lg text-gray-600 mb-10">
+                Manage donors and save lives today
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+                  <UserPlus className="w-20 h-20 text-red-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold">Register Donor</h3>
+                </div>
+                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+                  <Users className="w-20 h-20 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold">Donor List</h3>
+                </div>
+                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+                  <FileText className="w-20 h-20 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold">Daily Report</h3>
+                </div>
+              </div>
+            </div>
+          </Container>
         );
+
       case "/nurse/Donor_Register":
         return (
-          <ViewContainer>
+          <Container>
             <Donor_Register />
-          </ViewContainer>
+          </Container>
         );
       case "/nurse/Donor_List":
         return (
-          <ViewContainer>
+          <Container>
             <Donor_List />
-          </ViewContainer>
-        );
-      case "/nurse/registerDonorInfo/:userId":
-        return (
-          <ViewContainer>
-            <RegisterDonorPersonalInfo />
-          </ViewContainer>
-        );
-      case "/nurse/updateDonorInfo/:userId":
-        return (
-          <ViewContainer>
-            <UpdateDonorPersonalInfo />
-          </ViewContainer>
-        );
-      case "/nurse/RegisterDonation/:userId":
-        return (
-          <ViewContainer>
-            <RegisterDonation />
-          </ViewContainer>
+          </Container>
         );
       case "/nurse/writeReport/":
         return (
-          <ViewContainer>
+          <Container>
             <NurseReportForm />
-          </ViewContainer>
+          </Container>
         );
 
       default:
         return (
-          <ViewContainer>
-            <DashboardContent />
-          </ViewContainer>
+          <Container>
+            <div className="text-center text-3xl text-gray-500">
+              Page Not Found
+            </div>
+          </Container>
         );
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 font-inter">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={toggleSidebar}
+        onMouseEnter={() => isDesktop && setIsSidebarOpen(true)}
+        onMouseLeave={() => isDesktop && setIsSidebarOpen(false)}
+        onClose={() => setIsSidebarOpen(false)}
         isDesktop={isDesktop}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
       >
-        <div className="space-y-10">
-          <SidebarButton
-            onClick={() => handleNavigate("/nurse/dashboard")}
-            icon={<Home className="h-5 w-5" />}
-            label="Dashboard Overview"
-            isExpanded={isSidebarOpen}
-            isActive={currentPage === "/nurse/dashboard"}
-          />
-          <section className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700">
-            <h2
-              className={`text-xl font-extrabold text-gray-900 dark:text-white mb-4 flex items-center transition-all duration-300 ${
-                isSidebarOpen ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <Stethoscope className="h-6 w-6 mr-2 text-red-600" />
-              {isSidebarOpen && "Patient Care"}
-            </h2>
-            <div className="flex flex-col gap-3">
-              <SidebarButton
-                onClick={() => handleNavigate("/nurse/patient-records")}
-                icon={<ClipboardList className="h-5 w-5" />}
-                label="Personal Profile"
-                isExpanded={isSidebarOpen}
-                isActive={currentPage === "/nurse/patient-records"}
-              />
-              <SidebarButton
-                onClick={() => handleNavigate("/nurse/manage-treatments")}
-                icon={<Stethoscope className="h-5 w-5" />}
-                label="daily plans"
-                isExpanded={isSidebarOpen}
-                isActive={currentPage === "/nurse/manage-treatments"}
-              />
-            </div>
-          </section>
-          <hr className="border-gray-300 dark:border-gray-600" />
-          <section>
-            <h2
-              className={`text-xl font-bold text-gray-900 dark:text-white mb-4 transition-all duration-300 ${
-                isSidebarOpen ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {isSidebarOpen && "Donor Operations"}
-            </h2>
-            {isSidebarOpen && (
-              <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                Manage donor intake and review blood stock status.
-              </p>
-            )}
-            <div className="flex flex-col gap-4">
-              <SidebarButton
-                onClick={() => handleNavigate("/nurse/Donor_Register")}
-                icon={<UserPlus className="h-5 w-5" />}
-                label="Add New Donor"
-                isExpanded={isSidebarOpen}
-                isActive={currentPage === "/nurse/Donor_Register"}
-              />
-              <SidebarButton
-                onClick={() => handleNavigate("/nurse/writeReport/")}
-                icon={<UserPlus className="h-5 w-5" />}
-                label="Daily donation report "
-                isExpanded={isSidebarOpen}
-                isActive={currentPage === "/nurse/writeReport/"}
-              />
-              <SidebarButton
-                onClick={() => handleNavigate("/nurse/Donor_List")}
-                icon={<Users className="h-5 w-5" />}
-                label="Get Donor List"
-                isExpanded={isSidebarOpen}
-                isActive={currentPage === "/nurse/Donor_List"}
-              />
-            </div>
-          </section>
-          <hr className="border-gray-300 dark:border-gray-600" />
-          <section>
-            <h2
-              className={`text-xl font-bold text-gray-900 dark:text-white mb-4 transition-all duration-300 ${
-                isSidebarOpen ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {isSidebarOpen && "Configuration"}
-            </h2>
-            <SidebarButton
-              onClick={() => handleNavigate("/nurse/settings")}
-              icon={<Settings className="h-5 w-5" />}
-              label="Manage Settings"
-              isExpanded={isSidebarOpen}
-              isActive={currentPage === "/nurse/settings"}
-            />
-          </section>
-        </div>
+        <SidebarButton
+          onClick={() => handleNavigate("/nurse/dashboard")}
+          icon={<Home />}
+          label="Dashboard"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/nurse/dashboard"}
+        />
+        <SidebarButton
+          onClick={() => handleNavigate("/nurse/Donor_Register")}
+          icon={<UserPlus />}
+          label="Add New Donor"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/nurse/Donor_Register"}
+        />
+        <SidebarButton
+          onClick={() => handleNavigate("/nurse/Donor_List")}
+          icon={<Users />}
+          label="Donor List"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/nurse/Donor_List"}
+        />
+        <SidebarButton
+          onClick={() => handleNavigate("/nurse/writeReport/")}
+          icon={<FileText />}
+          label="Daily Report"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/nurse/writeReport/"}
+        />
+        <SidebarButton
+          onClick={() => handleNavigate("/nurse/settings")}
+          icon={<Settings />}
+          label="Settings"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/nurse/settings"}
+        />
       </Sidebar>
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 shadow-md sm:hidden">
-          <div className="flex items-center">
-            <button
-              onClick={toggleSidebar}
-              className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 rounded-full transition-colors mr-3"
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            <span className="text-xl font-bold text-red-600">Nurse Panel</span>
-          </div>
-        </header>
-        <main className="flex-1">{RenderPage()}</main>
-      </div>
+
+      <main
+        className={`flex-1 overflow-y-auto transition-all duration-300 ${
+          isDesktop ? (isSidebarOpen ? "sm:ml-72" : "sm:ml-20") : ""
+        }`}
+      >
+        <div className="p-4 lg:p-8">
+          <RenderPage />
+        </div>
+      </main>
+
+      {/* Mobile Menu Button */}
+      {!isDesktop && (
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed bottom-6 right-6 bg-red-700 text-white p-4 rounded-full shadow-2xl z-40 hover:bg-red-800 transition"
+        >
+          <Menu className="w-7 h-7" />
+        </button>
+      )}
     </div>
   );
 };
 
-// EXPORT FIX: Wrap NewNurseDashboard with DashboardLayout
 const WrappedNewNurseDashboard = (props) => (
   <DashboardLayout>
     <NewNurseDashboard {...props} />

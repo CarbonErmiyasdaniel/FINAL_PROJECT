@@ -1,208 +1,3 @@
-// import React, { useState } from "react";
-// import axios from "axios";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// // Default export React component so it can be previewed/imported easily
-// export default function HospitalRequestForm({
-//   apiUrl = "/api/hospital-requests/Request",
-//   authToken = null,
-// }) {
-//   const [form, setForm] = useState({
-//     hospitalName: "",
-//     requestDate: "",
-//     bloodType: "O+",
-//     quantityRequested: "",
-//     remarks: "",
-//   });
-//   const [loading, setLoading] = useState(false);
-
-//   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setForm((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const validate = () => {
-//     if (!form.hospitalName.trim()) return "Hospital name is required.";
-//     if (!form.requestDate) return "Request date is required.";
-//     if (!form.bloodType) return "Blood type is required.";
-//     if (!form.quantityRequested || Number(form.quantityRequested) <= 0)
-//       return "Quantity requested must be a number greater than 0.";
-//     return null;
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const err = validate();
-//     if (err) {
-//       toast.error(err);
-//       return;
-//     }
-
-//     setLoading(true);
-//     try {
-//       const payload = {
-//         hospitalName: form.hospitalName.trim(),
-//         requestDate: form.requestDate,
-//         bloodType: form.bloodType,
-//         quantityRequested: Number(form.quantityRequested),
-//         remarks: form.remarks?.trim() || undefined,
-//       };
-
-//       const headers = {};
-//       if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-
-//       const res = await axios.post(apiUrl, payload, { headers });
-
-//       if (res?.data?.success) {
-//         toast.success(res.data.message || "Request created successfully.");
-//         // clear form
-//         setForm({
-//           hospitalName: "",
-//           requestDate: "",
-//           bloodType: "O+",
-//           quantityRequested: "",
-//           remarks: "",
-//         });
-//       } else {
-//         toast.error(res?.data?.message || "Unexpected response from server.");
-//       }
-//     } catch (error) {
-//       const msg =
-//         error?.response?.data?.message ||
-//         error?.message ||
-//         "Server error. Could not create hospital request.";
-//       toast.error(msg);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-6">
-//       <ToastContainer
-//         position="top-right"
-//         hideProgressBar={false}
-//         newestOnTop
-//       />
-
-//       <h2 className="text-2xl font-semibold mb-4">
-//         Create Hospital Blood Request
-//       </h2>
-
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <div>
-//           <label className="block text-sm font-medium mb-1">
-//             Hospital Name<span className="text-red-500"> *</span>
-//           </label>
-//           <input
-//             name="hospitalName"
-//             value={form.hospitalName}
-//             onChange={handleChange}
-//             type="text"
-//             placeholder="Debre Berhan General Hospital"
-//             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-//           />
-//         </div>
-
-//         <div className="grid grid-cols-2 gap-4">
-//           <div>
-//             <label className="block text-sm font-medium mb-1">
-//               Request Date<span className="text-red-500"> *</span>
-//             </label>
-//             <input
-//               name="requestDate"
-//               value={form.requestDate}
-//               onChange={handleChange}
-//               type="date"
-//               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium mb-1">
-//               Blood Type<span className="text-red-500"> *</span>
-//             </label>
-//             <select
-//               name="bloodType"
-//               value={form.bloodType}
-//               onChange={handleChange}
-//               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-//             >
-//               {bloodTypes.map((bt) => (
-//                 <option key={bt} value={bt}>
-//                   {bt}
-//                 </option>
-//               ))}
-//             </select>
-//           </div>
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium mb-1">
-//             Quantity Requested<span className="text-red-500"> *</span>
-//           </label>
-//           <input
-//             name="quantityRequested"
-//             value={form.quantityRequested}
-//             onChange={handleChange}
-//             type="number"
-//             min="1"
-//             placeholder="e.g. 10"
-//             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-//           />
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium mb-1">Remarks</label>
-//           <textarea
-//             name="remarks"
-//             value={form.remarks}
-//             onChange={handleChange}
-//             rows={3}
-//             placeholder="Optional notes (e.g. urgent surgery, contact person)"
-//             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-//           />
-//         </div>
-
-//         <div className="flex items-center justify-end">
-//           <button
-//             type="submit"
-//             disabled={loading}
-//             className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 disabled:opacity-60"
-//           >
-//             {loading ? (
-//               <svg
-//                 className="animate-spin h-5 w-5"
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//               >
-//                 <circle
-//                   className="opacity-25"
-//                   cx="12"
-//                   cy="12"
-//                   r="10"
-//                   stroke="currentColor"
-//                   strokeWidth="4"
-//                 ></circle>
-//                 <path
-//                   className="opacity-75"
-//                   fill="currentColor"
-//                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-//                 ></path>
-//               </svg>
-//             ) : (
-//               <span>Send Request</span>
-//             )}
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// }
 import React, { useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -210,10 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Default export React component so it can be previewed/imported easily
-export default function HospitalRequestForm({
-  apiUrl = "/api/hospital-requests/Request",
-  authToken = null,
-}) {
+export default function HospitalRequestForm() {
   const [form, setForm] = useState({
     hospitalName: "",
     requestDate: "",
@@ -257,13 +49,14 @@ export default function HospitalRequestForm({
         remarks: form.remarks?.trim() || undefined,
       };
 
-      const headers = {};
-      if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-
-      const res = await axios.post(apiUrl, payload, { headers });
+      const res = await axios.post(
+        "http://localhost:5000/api/hospital_staff/requests",
+        payload,
+        { withCredentials: true }
+      );
 
       if (res?.data?.success) {
-        toast.success(res.data.message || "Request created successfully.");
+        toast.success(res.data.message || "Request created successfully!");
         // clear form
         setForm({
           hospitalName: "",

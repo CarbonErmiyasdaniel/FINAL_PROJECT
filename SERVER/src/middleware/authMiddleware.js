@@ -2,11 +2,11 @@
 // import User from "../models/User.js";
 // import TokenBlacklist from "../models/TokenBlacklist.js";
 
-// // /**
-// //  * Middleware factory to authenticate users with a specific role.
-// //  * @param {string} requiredRole - The role the user must have to access the route.
-// //  * @returns {Function} Express middleware function.
-// //  */
+// /**
+//  * Middleware factory to authenticate users with a specific role.
+//  * @param {string} requiredRole - The role the user must have to access the route.
+//  * @returns {Function} Express middleware function.
+//  */
 // const authenticate = (requiredRole) => async (req, res, next) => {
 //   let token;
 
@@ -62,151 +62,149 @@
 //   }
 // };
 
-// // Export specific middleware functions for each role
+// // -----------------------------------------------------------------
+// // GENERIC AUTHENTICATION MIDDLEWARE (New Code)
+// // -----------------------------------------------------------------
+
+// /**
+//  * Middleware to authenticate any logged-in user.
+//  * It checks token validity but IGNORES the user role.
+//  * @returns {Function} Express middleware function.
+//  */
+// export const authProtect = async (req, res, next) => {
+//   let token;
+
+//   // Check for the token in the HTTP-only cookie first
+//   if (req.cookies && req.cookies.jwt) {
+//     token = req.cookies.jwt;
+//   } else if (
+//     req.headers.authorization &&
+//     req.headers.authorization.startsWith("Bearer")
+//   ) {
+//     token = req.headers.authorization.split(" ")[1];
+//   } else if (req.header("x-auth-token")) {
+//     // Fallback to the custom x-auth-token header
+//     token = req.header("x-auth-token");
+//   }
+
+//   if (!token) {
+//     return res.status(401).json({ msg: "No token, authorization denied" });
+//   }
+
+//   try {
+//     // 1. Check if the token is blacklisted
+//     const isBlacklisted = await TokenBlacklist.findOne({ token });
+//     if (isBlacklisted) {
+//       return res
+//         .status(401)
+//         .json({ msg: "Token is blacklisted, authorization denied" });
+//     }
+
+//     // 2. Verify the token
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+//     // 3. Find user (only to confirm they still exist)
+//     const user = await User.findById(decoded.user.id).select("role");
+
+//     if (!user) {
+//       return res
+//         .status(401)
+//         .json({ msg: "User associated with token no longer exists." });
+//     }
+
+//     // Attach the user and token to the request object
+//     req.user = user;
+//     req.token = token; // IMPORTANT: This is the token we need to blacklist
+
+//     next();
+//   } catch (err) {
+//     // Handle invalid or expired tokens
+//     res.status(401).json({ msg: "Token is not valid" });
+//   }
+// };
+
+// // -----------------------------------------------------------------
+// // EXPORTS
+// // -----------------------------------------------------------------
+
+// // Export specific middleware functions for each role (Original Exports)
 // export const authAdmin = authenticate("admin");
 // export const authNurse = authenticate("nurse");
-
+// export const authDonor = authenticate("donor");
+// export const authLabTechnician = authenticate("lab_technician");
+// export const authPostCounselor = authenticate("post_counselor");
+// export const authHospitalStaff = authenticate("hospital_staff");
+// middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 
-/**
- * Middleware factory to authenticate users with a specific role.
- * @param {string} requiredRole - The role the user must have to access the route.
- * @returns {Function} Express middleware function.
- */
-const authenticate = (requiredRole) => async (req, res, next) => {
-  let token;
+const authenticateRole = (requiredRole) => async (req, res, next) => {
+  let token =
+    req.cookies?.jwt ||
+    (req.headers.authorization?.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
+      : null);
 
-  // Check for the token in the standard Authorization header (Bearer)
-  //FIX: Check for token in the HTTP-only cookie first
-  if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
-  } else if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.header("x-auth-token")) {
-    // Fallback to the custom x-auth-token header
-    token = req.header("x-auth-token");
-  }
-
-  // If no token is found, authorization is denied
   if (!token) {
     return res.status(401).json({ msg: "No token, authorization denied" });
   }
 
   try {
-    // Check if the token is blacklisted (e.g., after a logout)
-    const isBlacklisted = await TokenBlacklist.findOne({ token });
-    if (isBlacklisted) {
-      return res
-        .status(401)
-        .json({ msg: "Token is blacklisted, authorization denied" });
-    }
+    const blacklisted = await TokenBlacklist.findOne({ token });
+    if (blacklisted) return res.status(401).json({ msg: "Token revoked" });
 
-    // Verify the token's authenticity and decode the payload
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Corrected line: Access the 'id' directly from the decoded payload
-    const user = await User.findById(decoded.user.id).select("role");
+    // CRITICAL: DO NOT USE .select("role") — IT REMOVES _id!
+    const user = await User.findById(decoded.user.id); // ← FULL USER
 
-    // Check if the user exists and has the required role
-    if (!user || user.role !== requiredRole) {
-      return res.status(403).json({
-        msg: `Access denied. Only a ${requiredRole} can perform this action.`,
-      });
+    if (!user) return res.status(401).json({ msg: "User not found" });
+    if (user.role !== requiredRole) {
+      return res
+        .status(403)
+        .json({ msg: `Access denied. ${requiredRole} only.` });
     }
 
-    // Attach the user and token to the request object
-    req.user = user;
+    req.user = user; // ← NOW HAS _id, email, name, role
     req.token = token;
 
     next();
   } catch (err) {
-    // Handle invalid or expired tokens
-    res.status(401).json({ msg: "Token is not valid" });
+    return res.status(401).json({ msg: "Token invalid" });
   }
 };
 
-// -----------------------------------------------------------------
-// GENERIC AUTHENTICATION MIDDLEWARE (New Code)
-// -----------------------------------------------------------------
-
-/**
- * Middleware to authenticate any logged-in user.
- * It checks token validity but IGNORES the user role.
- * @returns {Function} Express middleware function.
- */
 export const authProtect = async (req, res, next) => {
-  let token;
+  let token =
+    req.cookies?.jwt ||
+    (req.headers.authorization?.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
+      : null);
 
-  // Check for the token in the HTTP-only cookie first
-  if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
-  } else if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.header("x-auth-token")) {
-    // Fallback to the custom x-auth-token header
-    token = req.header("x-auth-token");
-  }
-
-  if (!token) {
-    return res.status(401).json({ msg: "No token, authorization denied" });
-  }
+  if (!token) return res.status(401).json({ msg: "Not authorized" });
 
   try {
-    // 1. Check if the token is blacklisted
-    const isBlacklisted = await TokenBlacklist.findOne({ token });
-    if (isBlacklisted) {
-      return res
-        .status(401)
-        .json({ msg: "Token is blacklisted, authorization denied" });
-    }
+    const blacklisted = await TokenBlacklist.findOne({ token });
+    if (blacklisted) return res.status(401).json({ msg: "Token revoked" });
 
-    // 2. Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.user.id); // ← FULL USER
 
-    // 3. Find user (only to confirm they still exist)
-    const user = await User.findById(decoded.user.id).select("role");
+    if (!user) return res.status(401).json({ msg: "User not found" });
 
-    if (!user) {
-      return res
-        .status(401)
-        .json({ msg: "User associated with token no longer exists." });
-    }
-
-    // Attach the user and token to the request object
     req.user = user;
-    req.token = token; // IMPORTANT: This is the token we need to blacklist
-
+    req.token = token;
     next();
   } catch (err) {
-    // Handle invalid or expired tokens
-    res.status(401).json({ msg: "Token is not valid" });
+    return res.status(401).json({ msg: "Token invalid" });
   }
 };
 
-// -----------------------------------------------------------------
-// EXPORTS
-// -----------------------------------------------------------------
-
-// Export specific middleware functions for each role (Original Exports)
-export const authAdmin = authenticate("admin");
-export const authNurse = authenticate("nurse");
-export const authDonor = authenticate("donor");
-export const authLabTechnician = authenticate("lab_technician");
-export const authPostCounselor = authenticate("post_counselor");
-export const authHospitalStaff = authenticate("hospital_staff");
-
-// authProtect is also exported above.
-// "admin",
-/*   "nurse",
-        "lab_technician",
-        "post_counselor",
-        "hospital_staff",
-        "donor",*/
+// Export role middlewares
+export const authAdmin = authenticateRole("admin");
+export const authNurse = authenticateRole("nurse");
+export const authDonor = authenticateRole("donor");
+export const authLabTechnician = authenticateRole("lab_technician");
+export const authPostCounselor = authenticateRole("post_counselor");
+export const authHospitalStaff = authenticateRole("hospital_staff");

@@ -15,7 +15,8 @@ import WrappedNewNurseDashboard from "./Components/Pages/NurseDashboard.jsx";
 import WrappedNewDonorDashboard from "./Components/Pages/DonorDashboard.jsx";
 import WrappedNewlab_technicianDashboard from "./Components/Pages/lab_technicianDashboard.jsx";
 import WrappedNewPostCounselorDashboard from "./Components/Pages/post_counselor.jsx";
-import WrappedNew_hospital_staff_Dashboard from "./Components/Pages/hospital_staff.jsx";
+import WrappedHospitalStaffDashboard from "./Components/Pages/hospital_staff.jsx";
+
 const NotFoundPage = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800">
     <div className="text-center p-8 bg-white rounded-lg shadow-lg">
@@ -125,14 +126,16 @@ const App = () => {
               element={<WrappedNewDonorDashboard pageKey="/donor/dashboard" />}
             /> */}
             <Route
-              path="Profile"
-              element={<WrappedNewDonorDashboard pageKey="/donor/Profile" />}
+              path="dashboard"
+              element={<WrappedNewDonorDashboard pageKey="/donor/dashboard" />}
             />
             <Route
-              path="request-blood"
-              element={
-                <WrappedNewDonorDashboard pageKey="/donor/request-blood" />
-              }
+              path="history"
+              element={<WrappedNewDonorDashboard pageKey="/donor/history" />}
+            />
+            <Route
+              path="profile"
+              element={<WrappedNewDonorDashboard pageKey="/donor/profile" />}
             />
           </Route>
         </Route>
@@ -171,7 +174,7 @@ const App = () => {
         /////////////////////////////////
         <Route element={<ProtectedRoute allowedRoles={["hospital_staff"]} />}>
           <Route path="/hospital_staff">
-            <Route index element={<WrappedNew_hospital_staff_Dashboard />} />
+            <Route index element={<WrappedHospitalStaffDashboard />} />
             {/* <Route
               path="dashboard"
               element={<WrappedNewDonorDashboard pageKey="/donor/dashboard" />}
@@ -179,13 +182,25 @@ const App = () => {
             <Route
               path="Profile"
               element={
-                <WrappedNew_hospital_staff_Dashboard pageKey="/hospital_staff/Profile" />
+                <WrappedHospitalStaffDashboard pageKey="/hospital_staff/Profile" />
+              }
+            />
+            <Route
+              path="my-requests"
+              element={
+                <WrappedHospitalStaffDashboard pageKey="/hospital_staff/my-requests" />
+              }
+            />
+            <Route
+              path="dashboard"
+              element={
+                <WrappedHospitalStaffDashboard pageKey="/hospital_staff/dashboard" />
               }
             />
             <Route
               path="request-blood"
               element={
-                <WrappedNew_hospital_staff_Dashboard pageKey="/hospital_staff/request-blood" />
+                <WrappedHospitalStaffDashboard pageKey="/hospital_staff/request-blood" />
               }
             />
           </Route>

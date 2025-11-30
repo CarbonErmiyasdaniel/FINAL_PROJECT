@@ -1,216 +1,74 @@
-// import React, { useEffect, useState } from "react";
-// import axios from "axios";
-
-// const post_counselor_profile = () => {
-//   const [user, setUser] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [photo, setPhoto] = useState(null); // State for the uploaded photo
-//   const [photoPreview, setPhotoPreview] = useState(null); // State for the image preview
-
-//   useEffect(() => {
-//     const fetchUserProfile = async () => {
-//       try {
-//         const response = await axios.get("/api/donors/me", {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you store JWT in local storage
-//           },
-//         });
-//         setUser(response.data.data.user);
-//       } catch (err) {
-//         setError(err.response?.data?.message || "An error occurred");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchUserProfile();
-//   }, []);
-
-//   const handlePhotoChange = (event) => {
-//     const selectedFile = event.target.files[0];
-//     setPhoto(selectedFile);
-
-//     // Create a preview of the selected image
-//     if (selectedFile) {
-//       const objectUrl = URL.createObjectURL(selectedFile);
-//       setPhotoPreview(objectUrl);
-//     }
-//   };
-
-//   // Remove photo preview and reset state
-//   const handleRemovePhoto = () => {
-//     setPhoto(null);
-//     setPhotoPreview(null);
-//   };
-
-//   if (loading) {
-//     return <div className="text-center">Loading...</div>;
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="text-red-500 text-center">
-//         <p>{error}</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold mb-4">Donor Profile</h2>
-//       <div className="mb-4">
-//         <strong>Name:</strong> {user.name}
-//       </div>
-//       <div className="mb-4">
-//         <strong>Email:</strong> {user.email}
-//       </div>
-//       <div className="mb-4">
-//         <strong>Role:</strong> {user.role}
-//       </div>
-//       <div className="mb-4">
-//         <strong>Profile Photo:</strong>
-//         {photoPreview ? (
-//           <img
-//             src={photoPreview}
-//             alt="Profile Preview"
-//             className="w-24 h-24 rounded-full mt-2"
-//           />
-//         ) : user.photo ? (
-//           <img
-//             src={user.photo}
-//             alt="Profile"
-//             className="w-24 h-24 rounded-full mt-2"
-//           />
-//         ) : (
-//           <p className="text-gray-500">No photo uploaded</p>
-//         )}
-//       </div>
-//       <input
-//         type="file"
-//         accept="image/*"
-//         onChange={handlePhotoChange}
-//         className="mb-4"
-//       />
-//       {photo && (
-//         <div className="mb-4">
-//           <button
-//             onClick={handleRemovePhoto}
-//             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-//           >
-//             Remove Photo
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default post_counselor_profile;
-import React, { useEffect, useState } from "react";
+// src/Features/donor/DonorProfile.jsx
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const DonorProfile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [photo, setPhoto] = useState(null); // State for the uploaded photo
-  const [photoPreview, setPhotoPreview] = useState(null); // State for the image preview
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get("/api/donors/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you store JWT in local storage
-          },
-        });
-        setUser(response.data.data.user);
-      } catch (err) {
-        setError(err.response?.data?.message || "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
+    axios
+      .get("/api/donor/me", { withCredentials: true })
+      .then((res) => setProfile(res.data.data.profile));
   }, []);
 
-  const handlePhotoChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setPhoto(selectedFile);
-
-    // Create a preview of the selected image
-    if (selectedFile) {
-      const objectUrl = URL.createObjectURL(selectedFile);
-      setPhotoPreview(objectUrl);
-    }
-  };
-
-  // Remove photo preview and reset state
-  const handleRemovePhoto = () => {
-    setPhoto(null);
-    setPhotoPreview(null);
-  };
-
-  if (loading) {
-    return <div className="text-center">Loading...</div>;
-  }
-
-  if (error) {
+  if (!profile) {
     return (
-      <div className="text-red-500 text-center">
-        <p>{error}</p>
-      </div>
+      <div className="p-10 text-center text-gray-500">Loading profile...</div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Donor Profile</h2>
-      <div className="mb-4">
-        <strong>Name:</strong> {user.name}
-      </div>
-      <div className="mb-4">
-        <strong>Email:</strong> {user.email}
-      </div>
-      <div className="mb-4">
-        <strong>Role:</strong> {user.role}
-      </div>
-      <div className="mb-4">
-        <strong>Profile Photo:</strong>
-        {photoPreview ? (
-          <img
-            src={photoPreview}
-            alt="Profile Preview"
-            className="w-24 h-24 rounded-full mt-2"
-          />
-        ) : user.photo ? (
-          <img
-            src={user.photo}
-            alt="Profile"
-            className="w-24 h-24 rounded-full mt-2"
-          />
-        ) : (
-          <p className="text-gray-500">No photo uploaded</p>
-        )}
-      </div>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handlePhotoChange}
-        className="mb-4"
-      />
-      {photo && (
-        <div className="mb-4">
-          <button
-            onClick={handleRemovePhoto}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Remove Photo
-          </button>
+    <div className="p-6 lg:p-10 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        My Profile
+      </h1>
+
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6">
+        <div className="flex items-center gap-6 mb-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+            {profile.name.charAt(0)}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">{profile.name}</h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Blood Donor • {profile.donorNumber}
+            </p>
+          </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email
+            </label>
+            <p className="mt-1 text-lg">{profile.email}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone
+            </label>
+            <p className="mt-1 text-lg">{profile.phone}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Blood Type
+            </label>
+            <p className="mt-1 text-lg font-bold text-red-600">
+              {profile.bloodType}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Date of Birth
+            </label>
+            <p className="mt-1 text-lg">
+              {profile.dateOfBirth
+                ? new Date(profile.dateOfBirth).toLocaleDateString()
+                : "—"}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

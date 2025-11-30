@@ -52,7 +52,7 @@ const ForgotPassword = () => {
 
     try {
       // CALL THE BACKEND ROUTE (Make sure the backend is running on port 5000)
-      await axios.post("http://localhost:5000/api/auth/forgot-password", {
+      await axios.post("/api/auth/forgot-password", {
         email,
       });
 

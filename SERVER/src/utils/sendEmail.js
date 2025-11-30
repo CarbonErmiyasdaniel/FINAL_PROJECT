@@ -1,51 +1,43 @@
-// utils/email.js
-
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
+
 /**
  * Sends an email using Nodemailer.
- * * @param {object} options - Email options.
+ * @param {object} options - Email options.
  * @param {string} options.email - Recipient's email address.
- * @param {string} options.subject - Email subject line.
- * @param {string} options.message - Email body (plain text, usually containing the reset link).
+ * @param {string} options.subject - Email subject.
+ * @param {string} options.message - Email body text.
  */
 const sendEmail = async (options) => {
   try {
-    // 1. Create a Transporter
-    // This connects to the email service (Gmail in your case).
+    // 1. Create transporter
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        // These credentials come from your .env file
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_RESET, // from .env
+        pass: process.env.PASSWORD_RESET, // Gmail App Password
       },
-      // Optional: Add logging for better debugging in development
       logger: process.env.NODE_ENV === "development",
       debug: process.env.NODE_ENV === "development",
     });
 
-    // 2. Define Email Options
+    // 2. Mail options
     const mailOptions = {
-      from: "Your MERN App Support <support@yourdomain.com>", // Set a recognizable sender name
+      from: `"Blood Bank Support" <${process.env.EMAIL_RESET}>`,
       to: options.email,
       subject: options.subject,
       text: options.message,
-      // You can also add 'html' property for a richer email format
     };
 
-    // 3. Send the Email
+    // 3. Send email
     const info = await transporter.sendMail(mailOptions);
-
-    // Log success information (optional, helpful for debugging)
-    console.log("Email sent successfully:", info.response);
+    console.log(" Email sent:", info.response);
   } catch (error) {
     console.error(
-      "FAILED to send email. Check your EMAIL_USERNAME/PASSWORD in .env."
+      " FAILED to send email. Check EMAIL_RESET/PASSWORD_RESET in .env"
     );
     console.error(error);
-    // Important: Rethrow the error so the controller can handle it (e.g., clear the reset token)
     throw new Error("Email sending failed.");
   }
 };

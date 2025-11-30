@@ -5,7 +5,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  getBloodInventory,
+  // getBloodInventory,
   getHospitalRequests,
   updateRequestStatus,
   getNurseActivityReports,
@@ -18,15 +18,14 @@ router.post("/createUser", authAdmin, createUser);
 router.get("/getAllUsers", authAdmin, getAllUsers);
 router.put("/users/:userId", authAdmin, updateUser);
 router.delete("/users/:userId", authAdmin, deleteUser);
-////////////////
-// router.get("/inventory", authAdmin, getBloodInventory);
-// router.get("/requests", authAdmin, getHospitalRequests);
-// router.put("/requests/:requestId/status", authAdmin, updateRequestStatus);
 router.get("/reports/nurse-activity", authAdmin, getNurseActivityReports);
 router.get(
   "/reports/getNurseReportById/:reportId",
   authAdmin,
   getNurseReportById
 );
+// router.get("/inventory", authAdmin, getBloodInventory);
+router.get("/requests", authAdmin, getHospitalRequests);
+router.put("/requests/:requestId/status", authAdmin, updateRequestStatus);
 
 export default router;
