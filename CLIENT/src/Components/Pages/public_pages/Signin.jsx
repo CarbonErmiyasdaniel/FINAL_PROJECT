@@ -1,35 +1,29 @@
 // import { useState } from "react";
 // import axios from "axios";
-// // Import FaTint for the logo, removed FaSpinner from the static import as we'll use a custom spinner class
 // import { FaLanguage, FaSignInAlt, FaTint } from "react-icons/fa";
-// import { useNavigate } from "react-router-dom";
 // import { ToastContainer, toast } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 // import { useAuth } from "../../../context/useAuth.js";
-
-// // NOTE: Ensure your tailwind.config.js still contains the 'slide-in' animation for the left panel.
 
 // const Signin = () => {
 //   const [language, setLanguage] = useState("en");
 //   const [formData, setFormData] = useState({ email: "", password: "" });
 //   const [isLoading, setIsLoading] = useState(false);
 
-//   const navigate = useNavigate();
-//   const { login } = useAuth(); // Get the login function from context
+//   const { login } = useAuth();
 
 //   const translations = {
-//     // ... (rest of translations object remains unchanged)
 //     en: {
 //       title: "Sign In",
 //       email: "Email Address",
 //       password: "Password",
 //       forgotPassword: "Forgot Password?",
 //       signIn: "Sign In",
-//       welcome: "Welcome to Blood Bank", // Text with slide-in animation
+//       welcome: "Welcome to Blood Bank",
 //       subtitle: "Manage donors, hospitals, and donations in one place.",
-//       loginSuccess: "Login successful!",
+//       loginSuccess: "Login successful! Redirecting...",
 //       fillFields: "Please fill in all fields",
-//       serverError: "Server error or Invalid credentials",
+//       serverError: "Invalid credentials or server error",
 //     },
 //     am: {
 //       title: "መግቢያ",
@@ -39,20 +33,18 @@
 //       signIn: "ግባ",
 //       welcome: "እንኳን ወደ የደም ባንክ በደህና መጡ",
 //       subtitle: "የለጋሾችን፣ ሆስፒታሎችን እና ለጋ ሂደቶችን በአንድ ቦታ ያቀናብሩ።",
-//       loginSuccess: "ግባ ተሳክቷል!",
+//       loginSuccess: "ግባ ተሳክቷል! እየተዛወረ ነው...",
 //       fillFields: "እባክዎ ሁሉንም መስኮች ይሙሉ",
-//       serverError: "የአገልጋይ ስህተት ወይም የተሳሳተ መረጃ",
+//       serverError: "የተሳሳተ መረጃ ወይም የአገልጋይ ስህተት",
 //     },
 //   };
 
 //   const current = translations[language];
 
-//   // Input change
 //   const handleChange = (e) => {
 //     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
-//   // Login submit
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     setIsLoading(true);
@@ -68,22 +60,31 @@
 //         withCredentials: true,
 //       });
 
-//       const role = res.data.role;
-//       const token = res.data.token || "HTTP-ONLY-TOKEN-PLACEHOLDER";
-//       const username = res.data.name || "Unknown User";
-//       login(token, role, username); // Pass username to login function
-//       toast.success(current.loginSuccess, { autoClose: 1500 });
+//       const { role, name } = res.data;
 
-//       // Role-based redirect after toast
+//       // Update auth context
+//       login(res.data.token || "cookie-based", role, name);
+
+//       toast.success(current.loginSuccess, { autoClose: 1200 });
+
+//       // CRITICAL FIX: Full page redirect → forces cookie in ALL tabs
 //       setTimeout(() => {
-//         if (role === "admin") navigate("/admin");
-//         else if (role === "nurse") navigate("/nurse");
-//         else if (role === "donor") navigate("/donor");
-//         else if (role === "lab_technician") navigate("/lab_technician");
-//         else if (role === "post_counselor") navigate("/post_counselor");
-//         else if (role === "hospital_staff") navigate("/hospital_staff");
-//         else navigate("/hospital_staff"); // Default fallback
-//       }, 1500);
+//         const dashboard =
+//           role === "admin"
+//             ? "/admin"
+//             : role === "nurse"
+//             ? "/nurse"
+//             : role === "donor"
+//             ? "/donor"
+//             : role === "lab_technician"
+//             ? "/lab_technician"
+//             : role === "post_counselor"
+//             ? "/post_counselor"
+//             : "/hospital_staff";
+
+//         // THIS IS THE MAGIC LINE
+//         window.location.href = dashboard;
+//       }, 1300);
 //     } catch (err) {
 //       toast.error(err.response?.data?.msg || current.serverError);
 //     } finally {
@@ -92,17 +93,13 @@
 //   };
 
 //   return (
-//     // Base layout changed to use sharp corners and a strong shadow
 //     <div className="h-screen w-screen flex bg-gray-100 overflow-hidden font-sans shadow-2xl">
-//       {/* Left Section - Sliding Motion and Red Theme */}
+//       {/* Left Panel */}
 //       <div className="hidden lg:flex flex-col justify-center w-1/2 px-16 bg-gradient-to-br from-red-600 to-red-800 text-white shadow-2xl">
-//         {/* The container for the sliding animation */}
 //         <div className="animate-slide-in">
 //           <div className="mb-8">
-//             {/* Logo with a slight dynamic pulse/scale on hover */}
 //             <FaTint className="text-6xl text-white mb-4 transition-transform duration-500 hover:scale-110" />
 //           </div>
-//           {/* Text with Motion */}
 //           <h1 className="text-5xl font-extrabold mb-6 tracking-tight">
 //             {current.welcome}
 //           </h1>
@@ -113,13 +110,12 @@
 //         </div>
 //       </div>
 
-//       {/* Right Section - Login Form with Sharp Edges and Strong Shadow */}
+//       {/* Right Panel - Login Form */}
 //       <div className="flex items-center justify-center w-full lg:w-1/2 relative p-4 sm:p-8">
-//         {/* Language Switcher - Dynamic Hover Effect */}
+//         {/* Language Switcher */}
 //         <div className="absolute top-6 right-6 z-10">
 //           <button
 //             onClick={() => setLanguage(language === "en" ? "am" : "en")}
-//             // Added hover:shadow-xl and hover:translate-y-[-2px] for a subtle lift effect
 //             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 shadow-md text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
 //           >
 //             <FaLanguage className="text-red-500" />
@@ -129,11 +125,9 @@
 //           </button>
 //         </div>
 
-//         {/* Login Card - Subtle floating animation on the card itself */}
+//         {/* Login Card */}
 //         <div className="w-full max-w-lg bg-white shadow-2xl p-8 sm:p-12 border border-gray-200 hover:shadow-3xl transition-shadow duration-500">
-//           {/* Logo + Title */}
 //           <div className="text-center mb-10">
-//             {/* Logo remains circular for design contrast, added subtle pulsating border */}
 //             <div className="mx-auto w-20 h-20 bg-gradient-to-r from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl mb-4 border-2 border-transparent hover:border-red-300 transition-all duration-300">
 //               <FaTint className="text-4xl animate-pulse-slow" />
 //             </div>
@@ -142,9 +136,7 @@
 //             </h1>
 //           </div>
 
-//           {/* Form */}
 //           <form onSubmit={handleSubmit} className="space-y-6">
-//             {/* Email Field - Dynamic Border and Shadow on Focus */}
 //             <div>
 //               <label className="block text-gray-700 text-sm font-semibold mb-2">
 //                 {current.email}
@@ -155,12 +147,11 @@
 //                 value={formData.email}
 //                 onChange={handleChange}
 //                 placeholder={current.email}
-//                 // Added a transition and subtle hover effect to make inputs feel interactive
 //                 className="w-full px-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-red-500 text-gray-900 placeholder-gray-500 transition-all duration-300 bg-white focus:shadow-md hover:border-red-400"
+//                 required
 //               />
 //             </div>
 
-//             {/* Password Field - Dynamic Border and Shadow on Focus */}
 //             <div>
 //               <label className="block text-gray-700 text-sm font-semibold mb-2">
 //                 {current.password}
@@ -171,26 +162,23 @@
 //                 value={formData.password}
 //                 onChange={handleChange}
 //                 placeholder={current.password}
-//                 // Added a transition and subtle hover effect to make inputs feel interactive
 //                 className="w-full px-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-red-500 text-gray-900 placeholder-gray-500 transition-all duration-300 bg-white focus:shadow-md hover:border-red-400"
+//                 required
 //               />
 //             </div>
 
-//             {/* Forgot Password */}
 //             <div className="text-right">
 //               <a
 //                 href="/forgot-password"
-//                 className="text-sm text-red-600 hover:text-red-700 hover:underline font-medium transition-colors duration-200"
+//                 className="text-sm text-red-600 hover:text-red-700 hover:underline font-medium"
 //               >
 //                 {current.forgotPassword}
 //               </a>
 //             </div>
 
-//             {/* Submit Button - Dynamic lift, sharp edges and stronger shadow */}
 //             <button
 //               type="submit"
 //               disabled={isLoading}
-//               // Enhanced hover effect with a slight scale and larger shadow
 //               className={`w-full py-3 px-4 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-lg transition-all duration-300 transform ${
 //                 isLoading
 //                   ? "bg-red-400 cursor-not-allowed"
@@ -199,8 +187,7 @@
 //             >
 //               {isLoading ? (
 //                 <>
-//                   {/* Custom spinning animation for better control */}
-//                   <div className="border-t-2 border-white border-solid w-5 h-5 rounded-full animate-spin"></div>{" "}
+//                   <div className="border-t-2 border-white border-solid w-5 h-5 rounded-full animate-spin"></div>
 //                   {current.signIn}...
 //                 </>
 //               ) : (
@@ -213,35 +200,29 @@
 //         </div>
 //       </div>
 
-//       {/* Toast Container */}
-//       <ToastContainer
-//         position="top-right"
-//         autoClose={3000}
-//         hideProgressBar={false}
-//         newestOnTop={false}
-//         closeOnClick
-//         rtl={false}
-//         pauseOnFocusLoss
-//         draggable
-//         pauseOnHover
-//         theme="colored"
-//       />
+//       <ToastContainer position="top-right" autoClose={3000} theme="colored" />
 //     </div>
 //   );
 // };
 
 // export default Signin;
-
 import { useState } from "react";
 import axios from "axios";
-import { FaLanguage, FaSignInAlt, FaTint } from "react-icons/fa";
+import {
+  FaLanguage,
+  FaSignInAlt,
+  FaTint,
+  FaMobileAlt,
+  FaEnvelope,
+} from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../context/useAuth.js";
 
 const Signin = () => {
   const [language, setLanguage] = useState("en");
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loginMethod, setLoginMethod] = useState("email"); // "email" or "phone"
+  const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
@@ -249,7 +230,9 @@ const Signin = () => {
   const translations = {
     en: {
       title: "Sign In",
+      identifier: "Email or Phone",
       email: "Email Address",
+      phone: "Phone Number",
       password: "Password",
       forgotPassword: "Forgot Password?",
       signIn: "Sign In",
@@ -258,10 +241,13 @@ const Signin = () => {
       loginSuccess: "Login successful! Redirecting...",
       fillFields: "Please fill in all fields",
       serverError: "Invalid credentials or server error",
+      loginWith: "Login with:",
     },
     am: {
       title: "መግቢያ",
+      identifier: "ኢሜይል ወይም ስልክ",
       email: "ኢሜይል አድራሻ",
+      phone: "ስልክ ቁጥር",
       password: "የይለፍ ቃል",
       forgotPassword: "የይለፍ ቃልን ተረስተዋል?",
       signIn: "ግባ",
@@ -270,6 +256,7 @@ const Signin = () => {
       loginSuccess: "ግባ ተሳክቷል! እየተዛወረ ነው...",
       fillFields: "እባክዎ ሁሉንም መስኮች ይሙሉ",
       serverError: "የተሳሳተ መረጃ ወይም የአገልጋይ ስህተት",
+      loginWith: "በዚህ ይግቡ:",
     },
   };
 
@@ -283,25 +270,27 @@ const Signin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!formData.email || !formData.password) {
+    if (!formData.identifier || !formData.password) {
       toast.error(current.fillFields);
       setIsLoading(false);
       return;
     }
 
     try {
-      const res = await axios.post("/api/auth/login", formData, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        "/api/auth/login",
+        {
+          identifier: formData.identifier.trim(),
+          password: formData.password,
+        },
+        { withCredentials: true }
+      );
 
       const { role, name } = res.data;
 
-      // Update auth context
       login(res.data.token || "cookie-based", role, name);
-
       toast.success(current.loginSuccess, { autoClose: 1200 });
 
-      // CRITICAL FIX: Full page redirect → forces cookie in ALL tabs
       setTimeout(() => {
         const dashboard =
           role === "admin"
@@ -316,7 +305,6 @@ const Signin = () => {
             ? "/post_counselor"
             : "/hospital_staff";
 
-        // THIS IS THE MAGIC LINE
         window.location.href = dashboard;
       }, 1300);
     } catch (err) {
@@ -344,13 +332,13 @@ const Signin = () => {
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel */}
       <div className="flex items-center justify-center w-full lg:w-1/2 relative p-4 sm:p-8">
         {/* Language Switcher */}
         <div className="absolute top-6 right-6 z-10">
           <button
             onClick={() => setLanguage(language === "en" ? "am" : "en")}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 shadow-md text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 shadow-md text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-300 hover:shadow-xl"
           >
             <FaLanguage className="text-red-500" />
             <span className="text-sm font-semibold">
@@ -360,9 +348,9 @@ const Signin = () => {
         </div>
 
         {/* Login Card */}
-        <div className="w-full max-w-lg bg-white shadow-2xl p-8 sm:p-12 border border-gray-200 hover:shadow-3xl transition-shadow duration-500">
+        <div className="w-full max-w-lg bg-white shadow-2xl p-8 sm:p-12 border border-gray-200">
           <div className="text-center mb-10">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl mb-4 border-2 border-transparent hover:border-red-300 transition-all duration-300">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl mb-4">
               <FaTint className="text-4xl animate-pulse-slow" />
             </div>
             <h1 className="text-3xl font-bold text-gray-800">
@@ -371,21 +359,53 @@ const Signin = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Login Method Toggle */}
+            <div className="flex justify-center gap-6 mb-4">
+              <button
+                type="button"
+                onClick={() => setLoginMethod("email")}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all ${
+                  loginMethod === "email"
+                    ? "bg-red-600 text-white shadow-lg"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                <FaEnvelope /> {current.email}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod("phone")}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all ${
+                  loginMethod === "phone"
+                    ? "bg-red-600 text-white shadow-lg"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                <FaMobileAlt /> {current.phone}
+              </button>
+            </div>
+
+            {/* Identifier Field */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                {current.email}
+                {loginMethod === "email" ? current.email : current.phone}
               </label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type={loginMethod === "email" ? "email" : "tel"}
+                name="identifier"
+                value={formData.identifier}
                 onChange={handleChange}
-                placeholder={current.email}
-                className="w-full px-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-red-500 text-gray-900 placeholder-gray-500 transition-all duration-300 bg-white focus:shadow-md hover:border-red-400"
+                placeholder={
+                  loginMethod === "email"
+                    ? "name@example.com"
+                    : "+967 771234567"
+                }
+                className="w-full px-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-red-500 text-gray-900 placeholder-gray-400 transition-all duration-300 bg-white focus:shadow-md hover:border-red-400"
                 required
               />
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
                 {current.password}

@@ -350,8 +350,8 @@
 
 // src/pages/NurseDashboard.jsx
 // src/pages/NurseDashboard.jsx
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -407,7 +407,7 @@ const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => {
   );
 };
 
-/* ==================== SIDEBAR - NOW SHOWS BUTTONS! ==================== */
+/* ==================== SIDEBAR ==================== */
 const Sidebar = ({
   isOpen,
   onMouseEnter,
@@ -456,7 +456,6 @@ const Sidebar = ({
           ${!isDesktop ? (isOpen ? "translate-x-0" : "-translate-x-full") : ""}
         `}
       >
-        {/* HEADER + PROFILE */}
         <div
           className="space-y-6 flex-shrink-0"
           style={{ padding: isOpen || !isDesktop ? "1.5rem" : "1.5rem 0.5rem" }}
@@ -480,7 +479,6 @@ const Sidebar = ({
             )}
           </div>
 
-          {/* PROFILE PHOTO + NAME */}
           <div className="pt-4 border-t border-red-700">
             <div
               className={`flex items-center ${
@@ -561,13 +559,11 @@ const Sidebar = ({
           </div>
         </div>
 
-        {/* THIS IS THE KEY: {children} renders all your buttons! */}
         <nav className="flex-1 overflow-y-auto space-y-2 px-3 pb-4">
           {children}
         </nav>
       </aside>
 
-      {/* Mobile Overlay */}
       {isOpen && !isDesktop && (
         <div
           onClick={onClose}
@@ -578,11 +574,15 @@ const Sidebar = ({
   );
 };
 
-/* ==================== MAIN NURSE DASHBOARD ==================== */
+/* ==================== MAIN DASHBOARD WITH STATE SUPPORT ==================== */
 const NewNurseDashboard = ({ pageKey }) => {
   const navigate = useNavigate();
-  const { userId } = useParams();
-  const [currentPage, setCurrentPage] = useState(pageKey || "/nurse/dashboard");
+  const location = useLocation();
+  const state = useMemo(() => location.state || {}, [location.state]);
+
+  const [currentPage, setCurrentPage] = useState(
+    pageKey || "/nurse/Donor_List"
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
@@ -601,6 +601,17 @@ const NewNurseDashboard = ({ pageKey }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // This is the magic: check location.state first!
+  useEffect(() => {
+    if (
+      state.showRegisterInfo ||
+      state.showRegisterDonation ||
+      state.showUpdateInfo
+    ) {
+      setCurrentPage("dynamic-form");
+    }
+  }, [state]);
+
   const handleNavigate = (path) => {
     setCurrentPage(path);
     navigate(path);
@@ -609,53 +620,49 @@ const NewNurseDashboard = ({ pageKey }) => {
 
   const RenderPage = () => {
     const Container = ({ children }) => (
-      <div className="p-6 lg:p-10 min-h-screen bg-gray-50">{children}</div>
+      <div className="p-6 lg:p-10 min-h-screen bg-gradient-to-br from-red-50 to-white">
+        {children}
+      </div>
     );
 
-    if (currentPage.includes("/registerDonorInfo/") && userId)
+    // Dynamic forms from Donor List buttons
+    if (state.showRegisterInfo) {
       return (
         <Container>
-          <RegisterDonorPersonalInfo userId={userId} />
+          <RegisterDonorPersonalInfo
+            userId={state.donorId}
+            donorName={state.donorName || "Donor"}
+          />
         </Container>
       );
-    if (currentPage.includes("/updateDonorInfo/") && userId)
+    }
+    if (state.showRegisterDonation) {
       return (
         <Container>
-          <UpdateDonorPersonalInfo userId={userId} />
+          <RegisterDonation />
         </Container>
       );
-    if (currentPage.includes("/RegisterDonation/") && userId)
+    }
+    if (state.showUpdateInfo) {
       return (
         <Container>
-          <RegisterDonation userId={userId} />
+          <UpdateDonorPersonalInfo donorId={state.donorId} />
         </Container>
       );
+    }
 
+    // Static pages
     switch (currentPage) {
       case "/nurse/dashboard":
         return (
           <Container>
-            <div className="max-w-7xl mx-auto">
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-                Welcome Back, Nurse!
+            <div className="max-w-7xl mx-auto text-center">
+              <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
+                Welcome Back!
               </h1>
-              <p className="text-lg text-gray-600 mb-10">
-                Manage donors and save lives today
+              <p className="text-xl text-gray-600">
+                Select a menu from the sidebar
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-                  <UserPlus className="w-20 h-20 text-red-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold">Register Donor</h3>
-                </div>
-                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-                  <Users className="w-20 h-20 text-blue-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold">Donor List</h3>
-                </div>
-                <div className="bg-white p-10 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-                  <FileText className="w-20 h-20 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold">Daily Report</h3>
-                </div>
-              </div>
             </div>
           </Container>
         );
@@ -666,12 +673,14 @@ const NewNurseDashboard = ({ pageKey }) => {
             <Donor_Register />
           </Container>
         );
+
       case "/nurse/Donor_List":
         return (
           <Container>
             <Donor_List />
           </Container>
         );
+
       case "/nurse/writeReport/":
         return (
           <Container>
@@ -682,9 +691,7 @@ const NewNurseDashboard = ({ pageKey }) => {
       default:
         return (
           <Container>
-            <div className="text-center text-3xl text-gray-500">
-              Page Not Found
-            </div>
+            <Donor_List />
           </Container>
         );
     }
@@ -727,13 +734,6 @@ const NewNurseDashboard = ({ pageKey }) => {
           isExpanded={isSidebarOpen}
           isActive={currentPage === "/nurse/writeReport/"}
         />
-        <SidebarButton
-          onClick={() => handleNavigate("/nurse/settings")}
-          icon={<Settings />}
-          label="Settings"
-          isExpanded={isSidebarOpen}
-          isActive={currentPage === "/nurse/settings"}
-        />
       </Sidebar>
 
       <main
@@ -746,7 +746,6 @@ const NewNurseDashboard = ({ pageKey }) => {
         </div>
       </main>
 
-      {/* Mobile Menu Button */}
       {!isDesktop && (
         <button
           onClick={() => setIsSidebarOpen(true)}
@@ -759,6 +758,7 @@ const NewNurseDashboard = ({ pageKey }) => {
   );
 };
 
+/* ==================== FINAL EXPORT WITH DASHBOARD LAYOUT ==================== */
 const WrappedNewNurseDashboard = (props) => (
   <DashboardLayout>
     <NewNurseDashboard {...props} />

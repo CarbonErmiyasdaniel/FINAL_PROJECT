@@ -5,11 +5,12 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  // getBloodInventory,
-  getHospitalRequests,
-  updateRequestStatus,
   getNurseActivityReports,
   getNurseReportById,
+  getDashboardAnalytics,
+  getBloodStockSummary,
+  getRequestAnalytics,
+  getTestResultAnalytics,
 } from "../Controllers/adminController.js";
 
 const router = express.Router();
@@ -24,8 +25,9 @@ router.get(
   authAdmin,
   getNurseReportById
 );
-// router.get("/inventory", authAdmin, getBloodInventory);
-router.get("/requests", authAdmin, getHospitalRequests);
-router.put("/requests/:requestId/status", authAdmin, updateRequestStatus);
+router.get("/analytics/dashboard", authAdmin, getDashboardAnalytics);
+router.get("/analytics/blood-stock", authAdmin, getBloodStockSummary);
+router.get("/analytics/requests", authAdmin, getRequestAnalytics);
+router.get("/analytics/test-results", authAdmin, getTestResultAnalytics);
 
 export default router;

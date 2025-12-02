@@ -3,18 +3,22 @@
 // import jwt from "jsonwebtoken";
 // import User from "../models/User.js";
 // import SystemConfig from "../models/SystemConfig.js";
+// import TokenBlacklist from "../models/TokenBlacklist.js";
 // import sendEmail from "../utils/sendEmail.js";
 // import crypto from "crypto";
+// import express from "express";
+// import bcrypt from "bcryptjs";
+// import jwt from "jsonwebtoken";
+// import validator from "validator"; // ← ADD THIS LINE
+// import User from "../models/User.js";
+// // ... other imports
 // import { authProtect } from "../middleware/authMiddleware.js";
 
 // const router = express.Router();
 
-// // @route   POST /api/auth/register
-// // @desc    Register a new user
-// // @access  Public
-
+// // REGISTER (Only once — first admin)
 // router.post("/register", async (req, res) => {
-//   const { email, password } = req.body;
+//   const { email, password, name } = req.body;
 
 //   try {
 //     const existingAdmin = await User.findOne({ role: "admin" });
@@ -22,267 +26,264 @@
 //     const canSeed = !existingAdmin && !(cfg && cfg.adminCreated);
 
 //     if (!canSeed) {
-//       console.log(
-//         "Seed not needed: admin exists or bootstrap already completed."
-//       );
-//       // process.exit(0);
-//       return res.status(400).json({ msg: " admin already exists" });
+//       return res.status(400).json({ msg: "Admin already exists" });
 //     }
 
-//     // Check if user already exists
 //     let user = await User.findOne({ email });
 //     if (user) {
 //       return res.status(400).json({ msg: "User already exists" });
 //     }
 
-//     // Hash the password
-//     const salt = await bcrypt.genSalt(12); // 12 rounds
+//     const salt = await bcrypt.genSalt(12);
 //     const hashedPassword = await bcrypt.hash(password, salt);
 
-//     // Create new user with hashed password
-//     user = new User({ email, password: hashedPassword });
+//     user = new User({
+//       email,
+//       password: hashedPassword,
+//       name: name || email.split("@")[0],
+//       role: "admin", // First user = admin
+//     });
 
-//     // Save the user
 //     await user.save();
 
-//     res.status(201).json({ msg: "User registered successfully" });
+//     // Mark admin as created
+//     if (!cfg) {
+//       await SystemConfig.create({ adminCreated: true });
+//     } else {
+//       cfg.adminCreated = true;
+//       await cfg.save();
+//     }
+
+//     res.status(201).json({ msg: "Admin created successfully" });
 //   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server error");
+//     console.error("Register error:", err.message);
+//     res.status(500).json({ msg: "Server error" });
 //   }
 // });
 
-// // @route   POST /api/auth/login
-// // @desc    Authenticate user and get token
-// // @access  Public
+// // // LOGIN — PERFECT & FINAL
+// // router.post("/login", async (req, res) => {
+// //   const { email, password } = req.body;
+
+// //   try {
+// //     const user = await User.findOne({ email }).select("+password");
+// //     if (!user) {
+// //       return res.status(400).json({ msg: "Invalid credentials" });
+// //     }
+
+// //     const isMatch = await bcrypt.compare(password, user.password);
+// //     if (!isMatch) {
+// //       return res.status(400).json({ msg: "Invalid credentials" });
+// //     }
+
+// //     // PERFECT PAYLOAD — matches your middleware
+// //     const payload = {
+// //       user: {
+// //         id: user._id,
+// //         email: user.email,
+// //         name: user.name,
+// //         role: user.role,
+// //       },
+// //     };
+
+// //     const token = jwt.sign(payload, process.env.JWT_SECRET, {
+// //       expiresIn: "7d",
+// //     });
+
+// //     // Secure HTTP-only cookie
+// //     res.cookie("jwt", token, {
+// //       httpOnly: true,
+// //       secure: process.env.NODE_ENV === "production",
+// //       sameSite: "lax",
+// //       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+// //     });
+
+// //     res.json({
+// //       msg: "Login successful",
+// //       role: user.role,
+// //       name: user.name,
+// //     });
+// //   } catch (err) {
+// //     console.error("Login error:", err.message);
+// //     res.status(500).json({ msg: "Server error" });
+// //   }
+// // });
+// // POST /api/auth/login   ← One route for EVERYONE
 // router.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
+//   const { identifier, password } = req.body;
+
+//   if (!identifier || !password) {
+//     return res
+//       .status(400)
+//       .json({ msg: "Please provide email/phone and password" });
+//   }
 
 //   try {
-//     // Check if user exists and select the password field
-//     let user = await User.findOne({ email }).select("+password");
+//     let user;
+//     const trimmed = identifier.trim();
 
-//     // If user doesn't exist, return an error
+//     // Step 1: Detect if it's an email
+//     if (validator.isEmail(trimmed)) {
+//       user = await User.findOne({ email: trimmed.toLowerCase() }).select(
+//         "+password"
+//       );
+//     }
+//     // Step 2: If not email, or not found → try phone
 //     if (!user) {
-//       console.log("Login failed for user:", email);
-//       return res.status(400).json({ msg: " user not found" });
+//       user = await User.findOne({ phone: trimmed }).select("+password");
 //     }
 
-//     // Compare the provided password with the stored hashed password
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       console.log("Password mismatch for user:", email);
+//     // Step 3: Final fallback (very rare) — search both (in case of weird formatting)
+//     if (!user) {
+//       user = await User.findOne({
+//         $or: [{ email: trimmed.toLowerCase() }, { phone: trimmed }],
+//       }).select("+password");
+//     }
+
+//     if (!user) {
 //       return res.status(400).json({ msg: "Invalid credentials" });
 //     }
 
-//     // Prepare the payload for the JWT
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ msg: "Invalid credentials" });
+//     }
+
 //     const payload = {
 //       user: {
-//         id: user.id,
+//         id: user._id,
 //         email: user.email,
-//         role: user.role,
 //         name: user.name,
+//         role: user.role,
 //       },
 //     };
 
-//     // Check if JWT_SECRET is available
-//     if (!process.env.JWT_SECRET) {
-//       console.error("JWT_SECRET is not set. Cannot create token.");
-//       return res.status(500).json({ msg: "Server configuration error" });
-//     }
+//     const token = jwt.sign(payload, process.env.JWT_SECRET, {
+//       expiresIn: "7d",
+//     });
 
-//     // Sign the JWT and send it in the response
-//     jwt.sign(
-//       payload,
-//       process.env.JWT_SECRET,
-//       // 15 seconds for testing, change to 24h in production
-//       { expiresIn: 12 * 60 * 60 }, // Token expires in 12 hours
+//     res.cookie("jwt", token, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "lax",
+//       maxAge: 7 * 24 * 60 * 60 * 1000,
+//     });
 
-//       (err, token) => {
-//         if (err) throw err;
-//         // FIX A: Set the JWT as a secure, HTTP-only cookie
-//         res.cookie("jwt", token, {
-//           httpOnly: true, // Prevents client-side JS (XSS) from reading the token
-//           secure: process.env.NODE_ENV === "production", // Use only over HTTPS in prod
-//           maxAge: 12 * 60 * 60 * 1000, // 12 hours expiry
-//           sameSite: "Lax", // Good balance of security and usability
-//         });
-//         res.status(200).json({
-//           msg: "Login successful",
-//           token,
-//           role: user.role,
-//           name: user.name,
-//         });
-//       }
-//     );
+//     res.json({
+//       msg: "Login successful",
+//       role: user.role,
+//       name: user.name,
+//     });
 //   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server error");
+//     console.error("Login error:", err.message);
+//     res.status(500).json({ msg: "Server error" });
 //   }
 // });
 
+// // FORGOT PASSWORD
 // router.post("/forgot-password", async (req, res) => {
 //   const { email } = req.body;
-//   let user; // Declare user here to use in catch block
-
-//   // console.log(" Forgot password request received:", req.body);
 
 //   try {
-//     user = await User.findOne({ email });
-//     // console.log("User found:", !!user);/
-
-//     // Always respond with success to prevent email enumeration
+//     const user = await User.findOne({ email });
 //     if (!user) {
-//       return res.status(200).json({
-//         msg: "If a matching account was found, a password reset link has been sent.",
-//       });
+//       return res
+//         .status(200)
+//         .json({ msg: "If account exists, reset link sent" });
 //     }
 
-//     // 1️ Generate reset token and save hashed version
-//     const resetToken = crypto.randomBytes(20).toString("hex"); // Random token
+//     const resetToken = crypto.randomBytes(20).toString("hex");
 //     user.resetPasswordToken = crypto
 //       .createHash("sha256")
 //       .update(resetToken)
 //       .digest("hex");
-//     user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+//     user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 //     await user.save({ validateBeforeSave: false });
 
-//     // 2️ Create reset URL using frontend environment variable
-//     const frontendBaseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-//     const resetURL = `${frontendBaseUrl}/reset-password/${resetToken}`;
-//     // console.log(" Reset URL:", resetURL);
+//     const resetURL = `${
+//       process.env.FRONTEND_URL || "http://localhost:5173"
+//     }/reset-password/${resetToken}`;
 
-//     // 3️Send email
 //     await sendEmail({
 //       email: user.email,
-//       subject: "Blood Bank Password Reset Request",
-//       message: `You requested a password reset.\nClick here to reset your password:\n\n${resetURL}\n\nThis link is valid for 10 minutes.`,
+//       subject: "Password Reset - Blood Bank System",
+//       message: `Reset your password here (valid 10 mins):\n\n${resetURL}`,
 //     });
 
-//     res
-//       .status(200)
-//       .json({ success: true, msg: "Password reset link sent to your email." });
+//     res.json({ msg: "Reset link sent to email" });
 //   } catch (err) {
-//     // console.error("Error in forgot-password route:", err);
-
-//     // Clear token if email fails
-//     if (user) {
-//       user.resetPasswordToken = undefined;
-//       user.resetPasswordExpire = undefined;
-//       await user.save({ validateBeforeSave: false });
-//     }
-
-//     res.status(500).json({
-//       success: false,
-//       msg: "Error sending email. Please try again later.",
-//     });
+//     console.error(err);
+//     res.status(500).json({ msg: "Email could not be sent" });
 //   }
 // });
 
-// // ----------------------------------------------------------------
-// // PASSWORD RESET ROUTE
-// // ----------------------------------------------------------------
-
-// // @route   PUT /api/auth/reset-password/:token
-// // @desc    Accepts token and new password to reset the password
-// // @access  Public
+// // RESET PASSWORD
 // router.put("/reset-password/:token", async (req, res) => {
-//   // 1. Get the raw token from the URL and hash it for lookup
-//   const resetToken = req.params.token;
+//   const { password } = req.body;
 //   const hashedToken = crypto
 //     .createHash("sha256")
-//     .update(resetToken)
+//     .update(req.params.token)
 //     .digest("hex");
 
-//   const { password } = req.body;
-
 //   try {
-//     // 2. Find user by the hashed token and ensure it hasn't expired
-//     // We MUST select the password field here if we want to run pre-save hooks,
-//     // but since you are doing manual hashing, we only need to select it for the update.
-//     let user = await User.findOne({
+//     const user = await User.findOne({
 //       resetPasswordToken: hashedToken,
 //       resetPasswordExpire: { $gt: Date.now() },
 //     });
 
 //     if (!user) {
-//       return res.status(400).json({ msg: "Invalid or expired reset token." });
+//       return res.status(400).json({ msg: "Invalid or expired token" });
 //     }
 
-//     // 3. Validate the new password
-//     if (!password || password.length < 8) {
-//       return res
-//         .status(400)
-//         .json({ msg: "Password must be at least 8 characters." });
-//     }
-
-//     // 4. EXPLICITLY HASH THE NEW PASSWORD (As requested)
 //     const salt = await bcrypt.genSalt(12);
-//     user.password = await bcrypt.hash(password, salt); // Store the HASHED password
-
-//     // 5. Clear the token fields
+//     user.password = await bcrypt.hash(password, salt);
 //     user.resetPasswordToken = undefined;
 //     user.resetPasswordExpire = undefined;
-
-//     // 6. Save the user
 //     await user.save();
 
-//     res.status(200).json({
-//       success: true,
-//       msg: "Password reset successful. You can now log in.",
-//     });
+//     res.json({ msg: "Password reset successful" });
 //   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server error");
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// });
+
+// // LOGOUT — FULLY WORKING WITH BLACKLIST
+// router.post("/logout", authProtect, async (req, res) => {
+//   try {
+//     // Blacklist the current token
+//     await TokenBlacklist.create({ token: req.token });
+
+//     // Clear cookie
+//     res.cookie("jwt", "loggedout", {
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 1000),
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "lax",
+//     });
+
+//     res.json({ msg: "Logged out successfully" });
+//   } catch (err) {
+//     console.error("Logout error:", err);
+//     res.status(500).json({ msg: "Logout failed" });
 //   }
 // });
 
 // export default router;
-
-// // Import authProtect along with authAdmin, authNurse at the top of authRoutes.js
-// // For example: import { authAdmin, authNurse, authProtect } from "../middleware/authMiddleware.js";
-
-// // @route   POST /api/auth/logout
-// // @desc    Logout user by clearing cookie and blacklisting token
-// // @access  Private (Requires a token to execute)
-// router.post("/logout", authProtect, async (req, res) => {
-//   // ⬅ The fix is here
-//   // 1. Get the token from the request object (attached by the authenticate middleware)
-//   // const tokenToBlacklist = req.token;// change
-
-//   try {
-//     // 2. Add the current JWT to the blacklist model
-//     // This ensures the token cannot be used again, even if an attacker intercepts the cookie before it's cleared.
-//     // await TokenBlacklist.create({ token: tokenToBlacklist });/////////////////////change
-
-//     // 3. Clear the HTTP-only cookie
-//     // This is the action that logs the user out in the browser.
-//     res.cookie("jwt", "loggedout", {
-//       httpOnly: true,
-//       expires: new Date(Date.now() + 10 * 1000), // Expires in 10 seconds (immediate expiry)
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "Lax",
-//     });
-
-//     res.status(200).json({ success: true, msg: "Successfully logged out" });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server error during logout");
-//   }
-// });
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import validator from "validator"; // ← Correct import
+import crypto from "crypto";
+
 import User from "../models/User.js";
 import SystemConfig from "../models/SystemConfig.js";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 import sendEmail from "../utils/sendEmail.js";
-import crypto from "crypto";
 import { authProtect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// REGISTER (Only once — first admin)
+// ==================== REGISTER ADMIN (Only Once) ====================
 router.post("/register", async (req, res) => {
   const { email, password, name } = req.body;
 
@@ -307,12 +308,11 @@ router.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       name: name || email.split("@")[0],
-      role: "admin", // First user = admin
+      role: "admin",
     });
 
     await user.save();
 
-    // Mark admin as created
     if (!cfg) {
       await SystemConfig.create({ adminCreated: true });
     } else {
@@ -327,12 +327,39 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// LOGIN — PERFECT & FINAL
+// ==================== LOGIN - EMAIL OR PHONE (Perfect & Final) ====================
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
+
+  if (!identifier || !password) {
+    return res
+      .status(400)
+      .json({ msg: "Please provide email/phone and password" });
+  }
 
   try {
-    const user = await User.findOne({ email }).select("+password");
+    let user;
+    const trimmed = identifier.trim();
+
+    // 1. Try as email
+    if (validator.isEmail(trimmed)) {
+      user = await User.findOne({ email: trimmed.toLowerCase() }).select(
+        "+password"
+      );
+    }
+
+    // 2. Try as phone if not found
+    if (!user) {
+      user = await User.findOne({ phone: trimmed }).select("+password");
+    }
+
+    // 3. Final fallback
+    if (!user) {
+      user = await User.findOne({
+        $or: [{ email: trimmed.toLowerCase() }, { phone: trimmed }],
+      }).select("+password");
+    }
+
     if (!user) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
@@ -342,7 +369,6 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    // PERFECT PAYLOAD — matches your middleware
     const payload = {
       user: {
         id: user._id,
@@ -356,12 +382,11 @@ router.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Secure HTTP-only cookie
     res.cookie("jwt", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({
@@ -375,7 +400,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD
+// ==================== FORGOT PASSWORD ====================
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 
@@ -402,7 +427,7 @@ router.post("/forgot-password", async (req, res) => {
     await sendEmail({
       email: user.email,
       subject: "Password Reset - Blood Bank System",
-      message: `Reset your password here (valid 10 mins):\n\n${resetURL}`,
+      message: `Reset your password (valid 10 mins):\n\n${resetURL}`,
     });
 
     res.json({ msg: "Reset link sent to email" });
@@ -412,7 +437,7 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// RESET PASSWORD
+// ==================== RESET PASSWORD ====================
 router.put("/reset-password/:token", async (req, res) => {
   const { password } = req.body;
   const hashedToken = crypto
@@ -442,13 +467,11 @@ router.put("/reset-password/:token", async (req, res) => {
   }
 });
 
-// LOGOUT — FULLY WORKING WITH BLACKLIST
+// ==================== LOGOUT ====================
 router.post("/logout", authProtect, async (req, res) => {
   try {
-    // Blacklist the current token
     await TokenBlacklist.create({ token: req.token });
 
-    // Clear cookie
     res.cookie("jwt", "loggedout", {
       httpOnly: true,
       expires: new Date(Date.now() + 1000),

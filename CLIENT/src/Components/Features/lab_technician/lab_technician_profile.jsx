@@ -1,107 +1,156 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+// src/Features/lab_technician/lab_technician_profile.jsx
+import React from "react";
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  IdCard,
+  Building,
+  Award,
+} from "lucide-react";
 
 const LabTechnicianProfile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [photo, setPhoto] = useState(null); // State for the uploaded photo
-  const [photoPreview, setPhotoPreview] = useState(null); // State for the image preview
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get("/api/donors/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you store JWT in local storage
-          },
-        });
-        setUser(response.data.data.user);
-      } catch (err) {
-        setError(err.response?.data?.message || "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  const handlePhotoChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setPhoto(selectedFile);
-
-    // Create a preview of the selected image
-    if (selectedFile) {
-      const objectUrl = URL.createObjectURL(selectedFile);
-      setPhotoPreview(objectUrl);
-    }
-  };
-
-  // Remove photo preview and reset state
-  const handleRemovePhoto = () => {
-    setPhoto(null);
-    setPhotoPreview(null);
-  };
-
-  if (loading) {
-    return <div className="text-center">Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-red-500 text-center">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Donor Profile</h2>
-      <div className="mb-4">
-        <strong>Name:</strong> {user.name}
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          My Profile
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Laboratory technician information and credentials
+        </p>
       </div>
-      <div className="mb-4">
-        <strong>Email:</strong> {user.email}
-      </div>
-      <div className="mb-4">
-        <strong>Role:</strong> {user.role}
-      </div>
-      <div className="mb-4">
-        <strong>Profile Photo:</strong>
-        {photoPreview ? (
-          <img
-            src={photoPreview}
-            alt="Profile Preview"
-            className="w-24 h-24 rounded-full mt-2"
-          />
-        ) : user.photo ? (
-          <img
-            src={user.photo}
-            alt="Profile"
-            className="w-24 h-24 rounded-full mt-2"
-          />
-        ) : (
-          <p className="text-gray-500">No photo uploaded</p>
-        )}
-      </div>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handlePhotoChange}
-        className="mb-4"
-      />
-      {photo && (
-        <div className="mb-4">
-          <button
-            onClick={handleRemovePhoto}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Remove Photo
-          </button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Card */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+            <div className="relative inline-block">
+              <img
+                src="https://via.placeholder.com/150/4B5565/FFFFFF?text=LT"
+                alt="Technician"
+                className="w-32 h-32 rounded-full mx-auto border-4 border-red-600"
+              />
+              <div className="absolute bottom-0 right-0 bg-green-500 w-8 h-8 rounded-full border-4 border-white"></div>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-6">
+              Dr. Selamawit Tesfaye
+            </h2>
+            <p className="text-red-600 font-semibold">Senior Lab Technician</p>
+            <p className="text-gray-500 mt-2">
+              Blood Testing & Screening Department
+            </p>
+
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+                <IdCard className="w-5 h-5" />
+                <span>ID: LT-2024-087</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+                <Award className="w-5 h-5" />
+                <span>Certified since 2018</span>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Details */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <User className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Full Name
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    Selamawit Tesfaye Worku
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <Mail className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Email
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    selamawit@bloodcenter.et
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <Phone className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Phone
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    +251 911 234 567
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <Calendar className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Joined
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    March 15, 2018
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Professional Summary
+            </h3>
+            <div className="space-y-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Experienced laboratory technician with over 7 years in blood
+                screening and infectious disease testing.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 mt-1">Check</span>
+                  <span>
+                    Expert in HIV, HBV, HCV, and Syphilis screening using ELISA
+                    and rapid tests
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 mt-1">Check</span>
+                  <span>
+                    Trained 12 junior technicians in blood safety protocols
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 mt-1">Check</span>
+                  <span>
+                    Maintained 99.8% accuracy rate in test results (2024)
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -4,7 +4,10 @@ import User from "../models/User.js";
 import BloodInventory from "../models/BloodInventory.js";
 import HospitalRequest from "../models/HospitalRequest.js";
 import NurseReport from "../models/NurseReport.js";
-import bcrypt from "bcryptjs"; // Make sure you have this for password hashing
+import bcrypt from "bcryptjs";
+import Donation from "../models/Donation.js";
+import PostCounselingQueue from "../models/PostCounselingQueue.js";
+import asyncHandler from "express-async-handler"; // Make sure you have this for password hashing
 
 // @route   GET /api/admins/users
 export const getAllUsers = async (req, res) => {
@@ -125,114 +128,6 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// @desc   // @desc    Get all hospital requests
-// @route   GET /api/admin/requests
-///////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\
-// export const getHospitalRequests = async (req, res) => {
-//   try {
-//     const hospitalRequests = await HospitalRequest.find({}).select("-__v");
-//     console.log(
-//       " Admin fetching hospital requests. Found:",
-//       hospitalRequests.length
-//     );
-//     res.json(hospitalRequests);
-//   } catch (err) {
-//     console.error("Error fetching hospital requests:", err.message);
-//     res.status(500).json({ msg: "Server error" });
-//   }
-// };
-
-// // @desc    Update the status of a hospital request
-// // @route   PUT /api/admin/requests/:requestId/status
-// export const updateRequestStatus = async (req, res) => {
-//   const { requestId } = req.params;
-//   const { status, rejectionReason } = req.body;
-
-//   try {
-//     const validStatuses = ["Pending", "Fulfilled", "Rejected"];
-//     if (!validStatuses.includes(status)) {
-//       return res.status(400).json({
-//         msg: "Invalid status. Valid statuses are: Pending, Fulfilled, or Rejected.",
-//       });
-//     }
-
-//     // If rejecting, require a reason
-//     if (status === "Rejected" && !rejectionReason) {
-//       return res.status(400).json({
-//         msg: "Rejection reason is required when rejecting a request.",
-//       });
-//     }
-
-//     const updateData = {
-//       status,
-//       processedBy: req.user._id,
-//       processedAt: new Date(),
-//     };
-
-//     if (status === "Rejected" && rejectionReason) {
-//       updateData.rejectionReason = rejectionReason;
-//     }
-
-//     const updatedRequest = await HospitalRequest.findByIdAndUpdate(
-//       requestId,
-//       updateData,
-//       { new: true }
-//     ).select("-__v");
-
-//     if (!updatedRequest) {
-//       return res.status(404).json({ msg: "Request not found." });
-//     }
-
-//     console.log(` Request ${status} by admin:`, requestId);
-//     res.json(updatedRequest);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).json({ msg: "Server error" });
-//   }
-// };
-// ////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-// @desc    Get nurse activity reports
-// @route   GET /api/admin/reports/nurse-activity
-// controllers/adminController.js
-export const getHospitalRequests = async (req, res) => {
-  try {
-    const requests = await HospitalRequest.find({})
-      .populate("requestedBy", "name email")
-      .sort({ createdAt: -1 });
-
-    res.json(requests);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
-
-export const updateRequestStatus = async (req, res) => {
-  const { status } = req.body;
-  const valid = ["Fulfilled", "Rejected"];
-
-  if (!valid.includes(status)) {
-    return res.status(400).json({ msg: "Invalid status" });
-  }
-
-  try {
-    const request = await HospitalRequest.findById(req.params.requestId);
-
-    if (!request) return res.status(404).json({ msg: "Request not found" });
-
-    request.status = status;
-    request.processedBy = req.user._id; // ← NOW WORKS!
-    request.processedAt = Date.now();
-
-    await request.save();
-
-    res.json({ msg: "Status updated", request });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
-
 export const getNurseActivityReports = async (req, res) => {
   try {
     // Fetch all nurse reports and populate nurseId with name and email
@@ -275,24 +170,119 @@ export const getNurseReportById = async (req, res) => {
   }
 };
 
-export const getAllHospitalRequests = async (req, res) => {
-  try {
-    // 1. Fetch all requests from the database
-    // Optional: Use .sort({ requestDate: -1 }) to show latest requests first
-    const requests = await HospitalRequest.find({});
+// Controllers/adminAnalyticsController.js
 
-    // 2. Check if any requests were found
-    if (requests.length === 0) {
-      return res.status(404).json({ message: "No hospital requests found." });
-    }
+// 1. Main Dashboard Overview
+export const getDashboardAnalytics = asyncHandler(async (req, res) => {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // 3. Send successful response
-    res.status(200).json({
-      count: requests.length,
-      requests,
-    });
-  } catch (error) {
-    console.error(`Error fetching hospital requests: ${error.message}`);
-    res.status(500).json({ message: "Server error fetching requests." });
-  }
-};
+  const [requests, stock, donations, queue] = await Promise.all([
+    HospitalRequest.aggregate([
+      { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          fulfilled: {
+            $sum: { $cond: [{ $eq: ["$status", "Fulfilled"] }, 1, 0] },
+          },
+        },
+      },
+    ]),
+    BloodInventory.aggregate([
+      { $match: { status: "Available" } },
+      { $group: { _id: "$bloodType", count: { $sum: 1 } } },
+    ]),
+    Donation.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
+    PostCounselingQueue.countDocuments({ notified: false }),
+  ]);
+
+  const stockMap = stock.reduce(
+    (acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    },
+    { "A+": 0, "A-": 0, "B+": 0, "B-": 0, "AB+": 0, "AB-": 0, "O+": 0, "O-": 0 }
+  );
+
+  res.json({
+    success: true,
+    data: {
+      monthlyRequests: requests[0]?.total || 0,
+      fulfilledRequests: requests[0]?.fulfilled || 0,
+      pendingNotifications: queue,
+      totalDonationsLast30Days: donations,
+      currentStock: stockMap,
+      criticalTypes: Object.entries(stockMap)
+        .filter(([_, count]) => count < 5)
+        .map(([type]) => type),
+    },
+  });
+});
+
+// 2. Blood Stock Summary
+export const getBloodStockSummary = asyncHandler(async (req, res) => {
+  const stock = await BloodInventory.aggregate([
+    { $match: { status: "Available" } },
+    {
+      $group: {
+        _id: "$bloodType",
+        bags: { $sum: 1 },
+        totalVolume: { $sum: "$volume" },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const map = {};
+  ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].forEach((t) => {
+    const found = stock.find((s) => s._id === t);
+    map[t] = found ? found.bags : 0;
+  });
+
+  res.json({ success: true, stock: map });
+});
+
+// 3. Request Analytics
+export const getRequestAnalytics = asyncHandler(async (req, res) => {
+  const stats = await HospitalRequest.aggregate([
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const map = { Pending: 0, Fulfilled: 0, Rejected: 0 };
+  stats.forEach((s) => {
+    map[s._id] = s.count;
+  });
+
+  res.json({ success: true, ...map });
+});
+
+// 4. Test Result Analytics
+export const getTestResultAnalytics = asyncHandler(async (req, res) => {
+  const result = await Donation.aggregate([
+    { $match: { isTested: true } },
+    {
+      $group: {
+        _id: "$finalResult",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const safe = result.find((r) => r._id === "Safe")?.count || 0;
+  const unsafe = result.find((r) => r._id === "Unsafe")?.count || 0;
+
+  res.json({
+    success: true,
+    safe,
+    unsafe,
+    safePercentage:
+      unsafe + safe > 0 ? ((safe / (safe + unsafe)) * 100).toFixed(1) : 0,
+  });
+});
