@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 
-const HospitalStaffProfile = () => {
+const NurseProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -24,7 +24,8 @@ const HospitalStaffProfile = () => {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("/api/hospital_staff/me", {
+      const res = await axios.get("/api/nurses/me", {
+        // Updated endpoint
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.data);
@@ -55,7 +56,8 @@ const HospitalStaffProfile = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.patch("/api/hospital_staff/photo", formData, {
+      const res = await axios.patch("/api/nurses/photo", formData, {
+        // Updated endpoint
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -83,7 +85,7 @@ const HospitalStaffProfile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "/api/hospital_staff/change-password",
+        "/api/nurses/change-password", // Updated endpoint
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -112,58 +114,13 @@ const HospitalStaffProfile = () => {
 
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-white pt-10 pb-20">
         <div className="max-w-6xl mx-auto px-4">
-          {/* Side-by-Side Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left: Profile Card */}
             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-              {/* Gradient Header */}
               <div className="h-48 bg-gradient-to-br from-pink-500 via-red-500 to-orange-500 relative">
                 <div className="absolute inset-0 bg-black opacity-10"></div>
-
-                {/* Icons */}
-                <div className="absolute top-6 left-6 text-white">
-                  <button className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="white"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <div className="absolute top-6 right-6 text-white">
-                  <button className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="white"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </button>
-                </div>
               </div>
 
-              {/* Profile Info */}
               <div className="relative px-8 pb-10 -mt-20">
                 <div className="flex flex-col items-center">
                   <div className="relative">
@@ -179,17 +136,7 @@ const HospitalStaffProfile = () => {
                       htmlFor="photo-upload"
                       className="absolute bottom-2 right-2 bg-white rounded-full p-3 shadow-lg cursor-pointer hover:bg-gray-100 transition"
                     >
-                      <svg
-                        className="w-6 h-6 text-pink-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      {/* Upload photo SVG */}
                     </label>
                     <input
                       id="photo-upload"
@@ -207,18 +154,7 @@ const HospitalStaffProfile = () => {
                     {user.role.replace(/_/g, " ")}
                   </p>
                   <p className="text-gray-600 mt-1 flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {user.hospitalName || "Hospital Not Set"}
+                    {user.hospitalName || "Admin"}
                   </p>
                 </div>
 
@@ -283,4 +219,4 @@ const HospitalStaffProfile = () => {
   );
 };
 
-export default HospitalStaffProfile;
+export default NurseProfile;

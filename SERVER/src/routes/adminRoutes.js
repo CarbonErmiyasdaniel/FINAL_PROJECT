@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../config/multer.js";
 import { authAdmin } from "../middleware/authMiddleware.js";
 import {
   getAllUsers,
@@ -11,6 +12,9 @@ import {
   getBloodStockSummary,
   getRequestAnalytics,
   getTestResultAnalytics,
+  getMyProfile,
+  changeMyPassword,
+  updateMyPhoto,
 } from "../Controllers/adminController.js";
 
 const router = express.Router();
@@ -30,4 +34,7 @@ router.get("/analytics/blood-stock", authAdmin, getBloodStockSummary);
 router.get("/analytics/requests", authAdmin, getRequestAnalytics);
 router.get("/analytics/test-results", authAdmin, getTestResultAnalytics);
 
+router.get("/me", authAdmin, getMyProfile);
+router.patch("/change-password", authAdmin, changeMyPassword);
+router.patch("/photo", authAdmin, upload.single("photo"), updateMyPhoto);
 export default router;

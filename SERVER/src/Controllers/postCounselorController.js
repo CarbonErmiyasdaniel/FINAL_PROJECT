@@ -169,6 +169,88 @@ export const getPendingNotifications = asyncHandler(async (req, res) => {
 
 // PATCH /api/post-counselor/:id/mark-sent
 // Sends SMS and marks as notified
+// export const markAsNotified = asyncHandler(async (req, res) => {
+//   const queueItem = await PostCounselingQueue.findById(req.params.id).populate({
+//     path: "donation",
+//     select: "aboRh testedAt screeningTests",
+//     populate: {
+//       path: "personalInfo",
+//       populate: {
+//         path: "user",
+//         select: "name phone",
+//       },
+//     },
+//   });
+
+//   // Basic checks
+//   if (!queueItem) {
+//     return res.status(404).json({
+//       success: false,
+//       msg: "Notification not found",
+//     });
+//   }
+
+//   if (queueItem.notified) {
+//     return res.status(400).json({
+//       success: false,
+//       msg: "SMS already sent for this donor",
+//     });
+//   }
+
+//   const donation = queueItem.donation;
+//   if (!donation || !donation.personalInfo || !donation.personalInfo.user) {
+//     return res.status(400).json({
+//       success: false,
+//       msg: "Donor information not found",
+//     });
+//   }
+
+//   const donor = donation.personalInfo.user;
+
+//   if (!donor.phone) {
+//     return res.status(400).json({
+//       success: false,
+//       msg: "Donor has no phone number. Cannot send SMS.",
+//     });
+//   }
+
+//   const donationId = `DON-${donation._id.toString().slice(-6).toUpperCase()}`;
+
+//   try {
+//     // Send SMS via Twilio
+//     const notificationResults = await sendDonorNotification(
+//       donor, // { name, phone }
+//       donationId,
+//       queueItem.hasReactiveResult,
+//       donation.screeningTests || {}
+//     );
+
+//     // Mark as successfully sent
+//     queueItem.notified = true;
+//     queueItem.notifiedAt = new Date();
+//     queueItem.notifiedBy = req.user._id;
+//     queueItem.notificationLog = notificationResults;
+
+//     await queueItem.save();
+
+//     res.json({
+//       success: true,
+//       msg: "SMS sent successfully!",
+//       donationId,
+//       phone: donor.phone,
+//       result: queueItem.hasReactiveResult ? "REACTIVE" : "SAFE",
+//       sentVia: notificationResults,
+//     });
+//   } catch (error) {
+//     console.error("SMS Send Failed:", error.message);
+
+//     res.status(500).json({
+//       success: false,
+//       msg: "Failed to send SMS. Twilio error or invalid number.",
+//       error: error.message,
+//     });
+//   }
+// });
 export const markAsNotified = asyncHandler(async (req, res) => {
   const queueItem = await PostCounselingQueue.findById(req.params.id).populate({
     path: "donation",
@@ -219,10 +301,11 @@ export const markAsNotified = asyncHandler(async (req, res) => {
   try {
     // Send SMS via Twilio
     const notificationResults = await sendDonorNotification(
-      donor, // { name, phone }
-      donationId,
-      queueItem.hasReactiveResult,
-      donation.screeningTests || {}
+      donor, // 1st argument: { name, phone }
+      donationId, // 2nd argument
+      queueItem.hasReactiveResult, // 3rd argument
+      donation.screeningTests || {}, // 4th argument: screeningTests
+      donation.aboRh // <--- 5th argument: THE BLOOD TYPE IS NOW CORRECTLY PASSED
     );
 
     // Mark as successfully sent

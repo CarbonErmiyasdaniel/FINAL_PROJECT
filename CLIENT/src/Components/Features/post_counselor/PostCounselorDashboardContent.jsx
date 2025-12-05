@@ -415,7 +415,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-// Reusable Metric Card Component
+// Reusable Metric Card Componen
 // ← FIXED: Changed "icon: Icon" to "icon" and use it directly
 const MetricCard = ({ title, value, icon, color }) => (
   <div className="p-6 bg-white rounded-2xl shadow-lg border-l-4 border-gray-300 hover:shadow-2xl transition-shadow">
@@ -495,13 +495,10 @@ const PostCounselorDashboardContent = () => {
   if (pending.length === 0) {
     return (
       <div className="text-center py-20 bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl">
-        <CheckCircle className="w-32 h-32 text-green-600 mx-auto mb-6" />
         <h2 className="text-4xl font-bold text-green-700 mb-4">
-          All Donors Notified!
+          Donor notifications page
         </h2>
-        <p className="text-xl text-gray-600">
-          Great job! No pending notifications.
-        </p>
+        <p className="text-xl text-gray-600">No pending notifications.</p>
       </div>
     );
   }

@@ -438,3 +438,169 @@ export const writeReport = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+////////////////////////////////////////////////////////////////
+
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    const profilePhoto = user.photo
+      ? `${req.protocol}://${req.get("host")}/uploads/profiles/${user.photo}`
+      : null;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        photo: profilePhoto,
+        hospitalName: user.hospitalName || null,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * @desc    Change password
+ * @route   PATCH /api/hospital_staff/change-password
+ * @access  Private (Hospital Staff)
+ */
+export const changeMyPassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide currentPassword and newPassword",
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be at least 6 characters",
+    });
+  }
+
+  try {
+    const user = await User.findById(req.user._id).select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * @desc    Update profile photo
+ * @route   PATCH /api/hospital_staff/photo
+ * @access  Private (Hospital Staff)
+ */
+export const updateMyPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload an image",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Delete old photo if exists
+    if (user.photo) {
+      const oldPath = path.join(
+        process.cwd(),
+        "uploads",
+        "profiles",
+        user.photo
+      );
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    // Save new photo
+    user.photo = req.file.filename;
+    await user.save();
+
+    const photoUrl = `${req.protocol}://${req.get("host")}/uploads/profiles/${
+      req.file.filename
+    }`;
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      data: { photo: photoUrl },
+    });
+  } catch (error) {
+    console.error("Error uploading photo:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+////////////////////////////////////////////////
+export const updateUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, email, password, role, phone } = req.body;
+
+    const updateFields = { name, email, role };
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateFields.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json({ msg: "User deleted" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+};

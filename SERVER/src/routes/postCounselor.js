@@ -17,3 +17,6 @@ router.get("/pending", authPostCounselor, getPendingNotifications);
 router.patch("/:id/mark-sent", authPostCounselor, markAsNotified);
 
 export default router;
+
+///////////////////////
+// utils/sendNotification.js

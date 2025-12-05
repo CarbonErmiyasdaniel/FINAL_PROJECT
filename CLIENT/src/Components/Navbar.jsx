@@ -35,9 +35,11 @@ const Navbar = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  // Updated navLinks to include FAQ page
   const navLinks = [
     { to: "/about", text: "About Us" },
     { to: "/who", text: "Who Can Donate?" },
+    { to: "/faq", text: "FAQ" }, // Added FAQ link here
   ];
 
   return (
@@ -73,7 +75,7 @@ const Navbar = () => {
                 {amharicTexts.map((text, index) => (
                   <span
                     key={index}
-                    className="text-lg sm:text-xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent whitespace-nowrap"
+                    className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent whitespace-nowrap"
                   >
                     {text}
                   </span>
@@ -94,7 +96,7 @@ const Navbar = () => {
                 {({ isActive }) => (
                   <span
                     className={`
-                      relative px-4 h-full flex items-center text-sm font-medium
+                      relative px-4 h-full flex items-center text-lg font-medium
                       ${
                         isActive
                           ? "text-red-700"
@@ -124,7 +126,7 @@ const Navbar = () => {
 
             <Link
               to="/sign-in"
-              className="flex items-center px-3 py-1.5 rounded-md border border-red-600 text-red-600 bg-white/80 hover:bg-red-50 hover:text-red-700 shadow-xs hover:shadow-sm transition-all duration-300 text-sm"
+              className="flex items-center px-3 py-1.5 rounded-md border border-red-600 text-red-600 bg-white/80 hover:bg-red-50 hover:text-red-700 shadow-xs hover:shadow-sm transition-all duration-300 text-lg"
             >
               <FaSignInAlt className="mr-1.5 text-xs" />
               Sign In
@@ -160,7 +162,7 @@ const Navbar = () => {
               to={link.to}
               onClick={toggleMobileMenu}
               className={({ isActive }) => `
-                block px-3 py-2 rounded-md text-sm font-medium
+                block px-3 py-2 rounded-md text-lg font-medium
                 ${
                   isActive
                     ? "bg-red-50 text-red-700"
@@ -177,7 +179,7 @@ const Navbar = () => {
             <Link
               to="/sign-in"
               onClick={toggleMobileMenu}
-              className="flex items-center justify-center px-3 py-2 rounded-md border border-red-600 text-red-600 bg-white/80 hover:bg-red-50 hover:text-red-700 shadow-xs hover:shadow-sm transition-all duration-300 text-sm"
+              className="flex items-center justify-center px-3 py-2 rounded-md border border-red-600 text-red-600 bg-white/80 hover:bg-red-50 hover:text-red-700 shadow-xs hover:shadow-sm transition-all duration-300 text-lg"
             >
               <FaSignInAlt className="mr-1.5 text-xs" />
               Sign In

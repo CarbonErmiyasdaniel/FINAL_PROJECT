@@ -253,7 +253,9 @@ import HomePage from "./Components/Pages/HomePage.jsx";
 import About from "./Components/Pages/public_pages/About.jsx";
 import Signin from "./Components/Pages/public_pages/Signin.jsx";
 import Who from "./Components/Pages/public_pages/Who.jsx";
+import FaqPage from "./Components/Pages/public_pages/FaqPage.jsx";
 import "./index.css";
+
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 import UnauthorizedPage from "./Components/Pages/Unauthorized.jsx";
 import ForgotPassword from "./Components/Pages/ForgotPassword.jsx";
@@ -292,6 +294,7 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/about" element={<About />} />
         <Route path="/who" element={<Who />} />
+        <Route path="/faq" element={<FaqPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
 
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
@@ -322,8 +325,8 @@ const App = () => {
               }
             />
             <Route
-              path="analytics"
-              element={<WrappedAdminDashboard pageKey="/admin/analytics" />}
+              path="profile"
+              element={<WrappedAdminDashboard pageKey="/admin/profile" />}
             />
           </Route>
         </Route>
@@ -337,7 +340,16 @@ const App = () => {
                 <WrappedNewNurseDashboard pageKey="/nurse/Donor_Register" />
               }
             />
-            <Route path="Donor_List" element={<WrappedNewNurseDashboard />} />
+            <Route
+              path="Profile"
+              element={<WrappedNewNurseDashboard pageKey="/nurse/Profile" />}
+            />
+            <Route
+              path="Donor_List"
+              element={<WrappedNewNurseDashboard />}
+              pageKey="/nurse/Donor_List"
+            />
+
             <Route
               path="writeReport"
               element={
