@@ -154,7 +154,7 @@ const NurseProfile = () => {
                     {user.role.replace(/_/g, " ")}
                   </p>
                   <p className="text-gray-600 mt-1 flex items-center gap-1">
-                    {user.hospitalName || "Admin"}
+                    {user.hospitalName || ""}
                   </p>
                 </div>
 

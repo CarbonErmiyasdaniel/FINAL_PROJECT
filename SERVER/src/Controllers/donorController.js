@@ -1,254 +1,6 @@
-// // // Example in a controller file (e.g., 'userController.js')
-// // import User from "../models/User.js"; // Assuming the provided schema is in userModel.js
-
-// // /**
-// //  * @desc Get the profile data for the current logged-in donor
-// //  * @route GET /api/v1/users/me
-// //  * @access Private (Donor/Authenticated)
-// //  */
-// // export const getDonorProfile = async (req, res, next) => {
-// //   try {
-// //     // 1. Get the user ID from the request object (assuming 'protect' middleware adds 'req.user')
-// //     const userId = req.user.id;
-
-// //     // 2. Find the user by ID
-// //     // We select('-__v') to exclude internal Mongoose fields and use the 'select: false' defaults
-// //     const user = await User.findById(userId).select("-__v");
-
-// //     // 3. Check if the user exists and their role is 'donor'
-// //     if (!user || user.role !== "donor") {
-// //       // If user is not found or is not a donor, create and pass a 404 error
-// //       const error = new Error(
-// //         "User not found or is not authorized as a donor."
-// //       );
-// //       error.statusCode = 404;
-// //       return next(error);
-// //     }
-
-// //     // 4. Send the successful response
-// //     res.status(200).json({
-// //       status: "success",
-// //       data: {
-// //         user: user,
-// //       },
-// //     });
-// //   } catch (err) {
-// //     // 5. Catch any operational or database errors and pass them to the global error handler
-// //     next(err);
-// //   }
-// // };
-// /////////
-// // Controllers/donorController.js
-// // import User from "../models/User.js";
-// import PersonalInfo from "../models/PersonalInfo.js";
-// import Donation from "../models/Donation.js";
-// import bcrypt from "bcryptjs";
-// import fs from "fs";
-// import path from "path";
-
-// /**
-//  * @desc    Get logged-in donor profile and stats
-//  * @route   GET /api/donors/me
-//  * @access  Private (Donor)
-//  */
-// export const getDonorProfile = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-
-//     const user = await User.findById(userId).select("-password");
-//     if (!user || user.role !== "donor") {
-//       return res.status(404).json({ message: "Donor not found" });
-//     }
-
-//     const personalInfo = await PersonalInfo.findOne({ user: userId });
-
-//     const latestDonation = await Donation.findOne({
-//       personalInfo: personalInfo?._id,
-//     })
-//       .sort({ dateOfDonation: -1 })
-//       .select("dateOfDonation");
-
-//     let nextEligibleDate = null;
-//     let daysUntilNext = null;
-
-//     if (latestDonation) {
-//       const last = new Date(latestDonation.dateOfDonation);
-//       nextEligibleDate = new Date(last);
-//       nextEligibleDate.setMonth(nextEligibleDate.getMonth() + 3); // Approx. 90 days rule
-
-//       const diff = nextEligibleDate - new Date();
-//       daysUntilNext = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-//     }
-
-//     const totalDonations = await Donation.countDocuments({
-//       personalInfo: personalInfo?._id,
-//     });
-
-//     res.json({
-//       success: true,
-//       data: {
-//         profile: {
-//           name:
-//             `${personalInfo?.firstName || ""} ${
-//               personalInfo?.fatherName || ""
-//             } ${personalInfo?.surname || ""}`.trim() || user.name,
-//           email: user.email,
-//           phone: personalInfo?.contact?.mobile || "-",
-//           donorNumber: personalInfo?.donorNumber || "Not assigned",
-//           bloodType: personalInfo?.aboRh || "Unknown",
-//           dateOfBirth: personalInfo?.dateOfBirth,
-//           sex: personalInfo?.sex,
-//           address: personalInfo?.address,
-//         },
-//         stats: {
-//           totalDonations,
-//           lastDonationDate: latestDonation?.dateOfDonation || null,
-//           nextEligibleDate,
-//           daysUntilNext,
-//           canDonateNow: !latestDonation || daysUntilNext === 0,
-//         },
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error fetching donor profile:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-// /**
-//  * @desc    Get logged-in donor's donation history
-//  * @route   GET /api/donors/donations
-//  * @access  Private (Donor)
-//  */
-// export const getDonationHistory = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-
-//     const personalInfo = await PersonalInfo.findOne({ user: userId });
-//     if (!personalInfo) {
-//       return res.status(404).json({ message: "Personal info not found" });
-//     }
-
-//     const donations = await Donation.find({
-//       personalInfo: personalInfo._id,
-//     })
-//       .sort({ dateOfDonation: -1 })
-//       .select(
-//         "dateOfDonation aboRh typeOfDonation quantity hemoglobinLevel bloodPressure notes isDeferred deferralReason"
-//       );
-
-//     res.json({
-//       success: true,
-//       count: donations.length,
-//       data: donations,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching donation history:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-// /**
-//  * @desc    Update donor's profile photo
-//  * @route   PATCH /api/donors/photo
-//  * @access  Private (Donor)
-//  */
-// export const updateMyPhoto = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Please upload an image",
-//       });
-//     }
-
-//     // Use req.user.id from the authentication middleware
-//     const user = await User.findById(req.user.id);
-
-//     // Delete old photo if exists
-//     if (user.photo) {
-//       const oldPath = path.join(
-//         process.cwd(),
-//         "uploads",
-//         "profiles",
-//         user.photo
-//       );
-//       if (fs.existsSync(oldPath)) {
-//         fs.unlinkSync(oldPath);
-//       }
-//     }
-
-//     // Save new photo
-//     user.photo = req.file.filename;
-//     await user.save();
-
-//     const photoUrl = `${req.protocol}://${req.get("host")}/uploads/profiles/${
-//       req.file.filename
-//     }`;
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile photo updated successfully",
-//       data: { photo: photoUrl },
-//     });
-//   } catch (error) {
-//     console.error("Error uploading photo:", error);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
-
-// /**
-//  * @desc    Change donor password
-//  * @route   PATCH /api/donors/change-password
-//  * @access  Private (Donor)
-//  */
-// export const changeMyPassword = async (req, res) => {
-//   const { currentPassword, newPassword } = req.body;
-
-//   if (!currentPassword || !newPassword) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Please provide currentPassword and newPassword",
-//     });
-//   }
-
-//   if (newPassword.length < 6) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "New password must be at least 6 characters",
-//     });
-//   }
-
-//   try {
-//     // Note: req.user.id comes from the authDonor middleware
-//     const user = await User.findById(req.user.id).select("+password");
-
-//     const isMatch = await bcrypt.compare(currentPassword, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Current password is incorrect",
-//       });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     user.password = await bcrypt.hash(newPassword, salt);
-//     await user.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Password changed successfully",
-//     });
-//   } catch (error) {
-//     console.error("Error changing password:", error);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
 import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-import fs from "fs";
-import path from "path";
 
+import PersonalInfo from "../models/PersonalInfo.js";
 export const getMyProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
@@ -365,6 +117,223 @@ export const updateMyPhoto = async (req, res) => {
     });
   } catch (error) {
     console.error("Error uploading photo:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Add this function to your Donor Controller file (e.g., donorController.js)
+// Make sure to import the PersonalInfo model
+
+/**
+ * @desc    Get the personal information associated with the logged-in donor
+ * @route   GET /api/donors/personal-info
+ * @access  Private (Donor)
+ */
+export const getDonorPersonalInfo = async (req, res) => {
+  try {
+    // 1. Get the authenticated user's ID from the request object
+    const donorId = req.user._id;
+
+    // 2. Find the PersonalInfo document linked to this user ID
+    const personalInfo = await PersonalInfo.findOne({ user: donorId }).select(
+      "-__v -user -createdAt -updatedAt" // Exclude internal fields
+    );
+
+    if (!personalInfo) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Personal information not found. Please complete your profile.",
+      });
+    }
+
+    // 3. Return the personal information data
+    res.status(200).json({
+      success: true,
+      data: personalInfo,
+    });
+  } catch (error) {
+    console.error("Error fetching donor personal info:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * @desc    Update donor's personal information
+ * @route   PATCH /api/donors/personal-info
+ * @access  Private (Donor)
+ */
+export const updateDonorPersonalInfo = async (req, res) => {
+  try {
+    const donorId = req.user._id;
+    const updates = req.body;
+
+    // Remove immutable fields to prevent accidental changes
+    delete updates.donorNumber;
+    delete updates.user;
+    delete updates.seqCounter;
+
+    // Find the PersonalInfo document and update it
+    const personalInfo = await PersonalInfo.findOneAndUpdate(
+      { user: donorId },
+      { $set: updates }, // Use $set to update only the fields provided
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Run schema validators on the updated fields
+        // upsert: true, // You might consider this if you want to create if it doesn't exist
+      }
+    ).select("-__v -user -createdAt -updatedAt");
+
+    if (!personalInfo) {
+      return res.status(404).json({
+        success: false,
+        message: "Personal information not found. Cannot update.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Personal information updated successfully.",
+      data: personalInfo,
+    });
+  } catch (error) {
+    // Handle validation errors (e.g., required fields missing) and other server errors
+    console.error("Error updating donor personal info:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to update personal info.",
+    });
+  }
+};
+////////////////////////////////////////
+
+/**
+ * @desc    Get donor's own personal information
+ * @route   GET /api/donor/me/personal-info
+ * @access  Private (Donor)
+ */
+export const getMyPersonalInfo = async (req, res) => {
+  try {
+    // 1. Get the PersonalInfo document using the logged-in user's ID
+    const info = await PersonalInfo.findOne({ user: req.user._id });
+
+    if (!info) {
+      // A donor might not have personal info registered yet (if only registered via email/phone)
+      return res.status(404).json({
+        success: false,
+        message:
+          "Your personal information has not been registered yet. Please contact a nurse.",
+        isRegistered: false,
+      });
+    }
+
+    // 2. Format the data for the frontend
+    // Note: DateOfBirth is formatted back to 'YYYY-MM-DD' for form display
+    res.status(200).json({
+      success: true,
+      isRegistered: true,
+      data: {
+        donorNumber: info.donorNumber,
+        title: info.title,
+        fatherName: info.fatherName,
+        surname: info.surname,
+        dateOfBirth: info.dateOfBirth
+          ? info.dateOfBirth.toISOString().split("T")[0]
+          : null,
+        sex: info.sex,
+        occupation: info.occupation,
+        donorSignature: info.donorSignature,
+        address: info.address || {},
+        contact: {
+          mobile: info.contact?.mobile || null,
+          telephone: info.contact?.telephone || null,
+          pobox: info.contact?.pobox || null,
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching donor info:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+//////////////////////////
+// controllers/donorController.js (Add this to the file from the previous response)
+
+// Utility function to calculate the next eligible date (90 days/3 months rule)
+const calculateNextEligibleDate = (lastDonationDate) => {
+  if (!lastDonationDate) return null;
+
+  const nextAllowed = new Date(lastDonationDate);
+  // Add 3 months to the last donation date
+  nextAllowed.setMonth(nextAllowed.getMonth() + 3);
+
+  // We also use 90 days as a safe minimum, but 3 months is typical for Whole Blood
+  // nextAllowed.setDate(nextAllowed.getDate() + 90);
+
+  // Check if the calculated date is in the past, if so, the donor is currently eligible
+  if (nextAllowed <= new Date()) {
+    return { isEligible: true, nextDate: null, daysRemaining: 0 };
+  }
+
+  const today = new Date();
+  const msRemaining = nextAllowed.getTime() - today.getTime();
+  const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+
+  return {
+    isEligible: false,
+    nextDate: nextAllowed.toISOString().split("T")[0],
+    daysRemaining: daysRemaining,
+  };
+};
+
+/**
+ * @desc    Get donor's complete donation history and next eligibility
+ * @route   GET /api/donor/me/history
+ * @access  Private (Donor)
+ */
+export const getDonationHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Find the donor's PersonalInfo ID
+    const personalInfo = await PersonalInfo.findOne({ user: userId }).select(
+      "_id"
+    );
+
+    if (!personalInfo) {
+      return res.status(404).json({
+        success: false,
+        message: "Please register your full personal details first.",
+      });
+    }
+
+    const personalInfoId = personalInfo._id;
+
+    // 2. Fetch all donations for this donor, sorted newest first
+    const history = await Donation.find({ personalInfo: personalInfoId })
+      .select(
+        "dateOfDonation typeOfDonation quantity isDeferred deferralReason aboRh"
+      )
+      .sort({ dateOfDonation: -1 }) // Newest first
+      .lean();
+
+    // 3. Determine last donation date for eligibility calculation
+    const lastDonation = history.length > 0 ? history[0] : null;
+    const lastDonationDate = lastDonation ? lastDonation.dateOfDonation : null;
+
+    // 4. Calculate eligibility
+    const eligibility = calculateNextEligibleDate(lastDonationDate);
+
+    res.status(200).json({
+      success: true,
+      history: history,
+      eligibility: eligibility,
+      message: eligibility.isEligible
+        ? "You are currently eligible to donate."
+        : null,
+    });
+  } catch (err) {
+    console.error("Error fetching donation history:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

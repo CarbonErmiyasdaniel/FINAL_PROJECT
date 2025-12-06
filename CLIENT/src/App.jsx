@@ -309,6 +309,10 @@ const App = () => {
               element={<WrappedAdminDashboard pageKey="/admin/getAllUsers" />}
             />
             <Route
+              path="dashboard"
+              element={<WrappedAdminDashboard pageKey="/admin/dashboard" />}
+            />
+            <Route
               path="users/:userId"
               element={<WrappedAdminDashboard pageKey="/admin/users/:userId" />}
             />
@@ -323,6 +327,10 @@ const App = () => {
               element={
                 <WrappedAdminDashboard pageKey="/admin/UserStatsDashboard" />
               }
+            />
+            <Route
+              path="stock"
+              element={<WrappedAdminDashboard pageKey="/admin/stock" />}
             />
             <Route
               path="profile"
@@ -367,12 +375,20 @@ const App = () => {
               element={<WrappedNewDonorDashboard pageKey="/donor/dashboard" />}
             />
             <Route
-              path="history"
-              element={<WrappedNewDonorDashboard pageKey="/donor/history" />}
+              path="donation-history"
+              element={
+                <WrappedNewDonorDashboard pageKey="/donor/donation-history" />
+              }
             />
             <Route
               path="profile"
               element={<WrappedNewDonorDashboard pageKey="/donor/profile" />}
+            />
+            <Route
+              path="personal-info"
+              element={
+                <WrappedNewDonorDashboard pageKey="/donor/personal-info" />
+              }
             />
           </Route>
         </Route>
@@ -432,6 +448,12 @@ const App = () => {
               path="notifications"
               element={
                 <WrappedNewPostCounselorDashboard pageKey="/post_counselor/notifications" />
+              }
+            />
+            <Route
+              path="finalized-notifications"
+              element={
+                <WrappedNewPostCounselorDashboard pageKey="/post_counselor/finalized-notifications" />
               }
             />
           </Route>

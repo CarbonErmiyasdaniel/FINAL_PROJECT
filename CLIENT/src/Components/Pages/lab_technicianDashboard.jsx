@@ -1594,12 +1594,12 @@ const Sidebar = ({
               isOpen || !isDesktop ? "opacity-100" : "opacity-0 h-0"
             }`}
           >
-            <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
+            {/* <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
               <Heart className="h-7 w-7 mr-2 text-white fill-current" />
               <span className={isDesktop && !isOpen ? "hidden" : ""}>
                 LAB TECHNICIAN
               </span>
-            </h1>
+            </h1> */}
             {!isDesktop && (
               <button
                 onClick={onClose}
@@ -1616,13 +1616,13 @@ const Sidebar = ({
             }`}
           >
             <div className="relative group">
-              <img
+              {/* <img
                 src="https://via.placeholder.com/48/FFFFFF/A51B27?text=LT"
                 alt="Lab Tech"
                 className={`w-12 h-12 rounded-full border-3 border-white/70 ${
                   !isOpen && isDesktop ? "scale-90" : "scale-100"
                 }`}
-              />
+              /> */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center text-white text-xs">
                 {isOpen ? "Edit" : <User className="w-4 h-4" />}
               </div>
@@ -1726,8 +1726,8 @@ const LabTechnicianDashboard = () => {
 
   const RenderPage = () => {
     switch (currentPage) {
-      case "/lab_technician/dashboard":
-        return <DashboardHome />;
+      // case "/lab_technician/dashboard":
+      //   return <DashboardHome />;
       case "/lab_technician/profile":
         return <LabTechnicianProfile />;
       case "/lab_technician/test-list":
@@ -1741,7 +1741,7 @@ const LabTechnicianDashboard = () => {
       case "/lab_technician/blood-stock": // ← NEW PAGE
         return <BloodStockDashboard />;
       default:
-        return <DashboardHome />;
+        return <PendingTestsPage />;
     }
   };
 
@@ -1754,13 +1754,13 @@ const LabTechnicianDashboard = () => {
         onMouseEnter={() => isDesktop && setIsSidebarOpen(true)}
         onMouseLeave={() => isDesktop && setIsSidebarOpen(false)}
       >
-        <SidebarButton
+        {/* <SidebarButton
           onClick={() => handleNavigate("/lab_technician/dashboard")}
           icon={<Home />}
           label="Dashboard"
           isExpanded={isSidebarOpen}
           isActive={currentPage === "/lab_technician/dashboard"}
-        />
+        /> */}
         <SidebarButton
           onClick={() => handleNavigate("/lab_technician/profile")}
           icon={<User />}

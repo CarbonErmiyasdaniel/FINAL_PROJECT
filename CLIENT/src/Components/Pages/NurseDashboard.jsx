@@ -114,7 +114,7 @@ const Sidebar = ({
             }`}
           >
             <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
-              <Heart className="h-7 w-7 mr-2 fill-current" />
+              {/* <Heart className="h-7 w-7 mr-2 fill-current" /> */}
               NURSE PANEL
             </h1>
             {!isDesktop && (
@@ -134,7 +134,7 @@ const Sidebar = ({
               }`}
             >
               <div className="relative group">
-                <label htmlFor="profile-upload" className="cursor-pointer">
+                {/* <label htmlFor="profile-upload" className="cursor-pointer">
                   <div className="w-14 h-14 rounded-full border-4 border-white/70 shadow-lg overflow-hidden">
                     {profilePic ? (
                       <img
@@ -151,14 +151,14 @@ const Sidebar = ({
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-full flex items-center justify-center transition">
                     <Camera className="w-6 h-6 text-white" />
                   </div>
-                </label>
-                <input
+                </label> */}
+                {/* <input
                   id="profile-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="hidden"
-                />
+                /> */}
               </div>
 
               <div className={`ml-4 ${isOpen ? "block" : "hidden"}`}>

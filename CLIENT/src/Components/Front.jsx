@@ -145,17 +145,17 @@ const Front = () => {
   const slides = [
     {
       title: "የደብረ ብርሃን የደምና ህዋስ አገልግሎት",
-      description: "ሕይወት የሚያድኑ የደም ልገሶችን በመስጠት ማህበረሰባችንን እያጠናከርን ነው",
+      description: "ደም በመለገሰ በአደጋ ወቅት የተጎዱ ሰዎች ህይወት ያድኑ ",
       color: "from-red-800/90 to-red-600/90",
     },
     {
-      title: "ደም ማሳደድ ሕይወት ነው",
+      title: "ደም መለገሰ ሕይወት ነው",
       description: "አንድ የደም ልገሳ እስከ ሦስት ሕይወቶችን ሊያድን ይችላል",
       color: "from-blue-800/90 to-blue-600/90",
     },
     {
-      title: "ደም የሁላችንም እርዳታ ነው",
-      description: "ዛሬ የምትሰጡት ደም ነገ ለእርስዎ ወይም ለቤተሰብዎ ሊሆን ይችላል",
+      title: "ደም በመለገሰ ሕይወት እናድን",
+      description: "ዛሬ የምትሰጡት ደም ነገ ለእርስዎ ወይም ለቤተሰብዎ የሚሆን ነው",
       color: "from-purple-800/90 to-purple-600/90",
     },
   ];
@@ -247,7 +247,7 @@ const Front = () => {
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 px-4">
             {[
               { value: "12+", label: "ዓመታት አገልግሎት" },
-              { value: "50K+", label: "የተዳኑ ሕይወቶች" },
+              { value: "10K+", label: "የዳኑ ሕይወቶች" },
               { value: "15K+", label: "ዓመታዊ ለጋሾች" },
               { value: "12", label: "የምንደግፋቸው ሆስፒታሎች" },
             ].map((stat, index) => (

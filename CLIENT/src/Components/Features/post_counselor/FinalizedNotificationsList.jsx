@@ -1,9 +1,150 @@
+// import React, { useState, useEffect, useCallback } from "react";
+
+// // NOTE: Replace this with your actual backend base URL
+// const API_BASE_URL = "/api/post-counselor/finalized";
+
+// const FinalizedNotificationsList = () => {
+//   const [data, setData] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState(null);
+//   const [filter, setFilter] = useState("Safe"); // Default filter: 'Safe'
+
+//   // Function to fetch data from the backend
+//   const fetchData = useCallback(async (resultType) => {
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       // Construct the URL with the filter parameter
+//       const response = await fetch(`${API_BASE_URL}?result=${resultType}`);
+
+//       if (!response.ok) {
+//         // Handle non-200 responses (e.g., 400 Bad Request if filter is invalid)
+//         const errorData = await response.json();
+//         throw new Error(
+//           errorData.msg || `HTTP error! Status: ${response.status}`
+//         );
+//       }
+
+//       const json = await response.json();
+
+//       if (json.success) {
+//         setData(json.data);
+//       } else {
+//         // Handle success: false from the backend structure
+//         throw new Error(json.msg || "Failed to fetch data.");
+//       }
+//     } catch (err) {
+//       console.error("Fetch Error:", err);
+//       setError(err.message);
+//       setData([]); // Clear data on error
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   // Run fetchData whenever the filter state changes
+//   useEffect(() => {
+//     fetchData(filter);
+//   }, [filter, fetchData]);
+
+//   // Helper to format Date objects
+//   const formatDate = (dateString) => {
+//     if (!dateString) return "N/A";
+//     return new Date(dateString).toLocaleString();
+//   };
+
+//   // --- Render Logic ---
+
+//   return (
+//     <div className="finalized-notifications-container">
+//       <h2>Finalized Donor Notifications</h2>
+
+//       {/* Filter Buttons */}
+//       <div className="filter-controls">
+//         <button
+//           onClick={() => setFilter("Safe")}
+//           // Example of simple styling for active state
+//           style={{ backgroundColor: filter === "Safe" ? "green" : "lightgray" }}
+//         >
+//            Safe Results ({filter === "Safe" ? data.length : "..."})
+//         </button>
+//         <button
+//           onClick={() => setFilter("Unsafe")}
+//           style={{ backgroundColor: filter === "Unsafe" ? "red" : "lightgray" }}
+//         >
+//           Unsafe Results ({filter === "Unsafe" ? data.length : "..."})
+//         </button>
+//       </div>
+
+//       <p>
+//         Showing **{filter}** Donors (Total: {data.length})
+//       </p>
+
+//       {/* Loading & Error States */}
+//       {loading && <p>Loading donor data...</p>}
+//       {error && <p style={{ color: "red" }}>Error fetching data: {error}</p>}
+
+//       {/* Data Table */}
+//       {!loading && data.length > 0 && (
+//         <table className="notifications-table">
+//           <thead>
+//             <tr>
+//               <th>ID</th>
+//               <th>Donor Name</th>
+//               <th>Blood Type (ABO/Rh)</th>
+//               <th>Result</th>
+//               <th>SMS Status</th>
+//               <th>Notified At</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {data.map((item) => (
+//               <tr
+//                 key={item._id}
+//                 style={{
+//                   backgroundColor:
+//                     item.finalResult === "Unsafe" ? "#fdd" : "#dfd",
+//                 }}
+//               >
+//                 <td>{item.donationId}</td>
+//                 <td>{item.name}</td>
+//                 <td>
+//                   <strong>{item.aboRh}</strong>
+//                 </td>
+//                 <td>
+//                   <span
+//                     style={{
+//                       fontWeight: "bold",
+//                       color:
+//                         item.finalResult === "Unsafe" ? "darkred" : "darkgreen",
+//                     }}
+//                   >
+//                     {item.finalResult}
+//                   </span>
+//                 </td>
+//                 <td>{item.smsStatus === "sent" ? "Sent" : "Failed"}</td>
+//                 <td>{formatDate(item.notifiedAt)}</td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       )}
+
+//       {!loading && data.length === 0 && !error && (
+//         <p>No **{filter}** notifications found.</p>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default FinalizedNotificationsList;
 import React, { useState, useEffect, useCallback } from "react";
 // Assuming you have 'axios' imported elsewhere or use fetch. Sticking with 'fetch' as per your original code.
 import { Loader2 } from "lucide-react"; // Using Lucide React for a modern spinner/icon
 
 // NOTE: Replace this with your actual backend base URL
-const API_BASE_URL = "/api/lab-technician/finalized";
+const API_BASE_URL = "/api/post-counselor/finalized";
 
 // Helper component for the mobile-only detail view
 const MobileDetails = ({ item }) => (
@@ -22,7 +163,7 @@ const MobileDetails = ({ item }) => (
   </div>
 );
 
-const TestListPage = () => {
+const FinalizedNotificationsList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -79,7 +220,7 @@ const TestListPage = () => {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h2 className="text-3xl font-bold mb-6 text-primary">
-        🩸 Finalized Donor Notifications
+        Finalized Donor Notifications
       </h2>
 
       {/* Filter Buttons (DaisyUI segmented controls) */}
@@ -225,4 +366,4 @@ const TestListPage = () => {
   );
 };
 
-export default TestListPage;
+export default FinalizedNotificationsList;

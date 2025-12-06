@@ -3,6 +3,7 @@ import HospitalRequest from "../models/HospitalRequest.js";
 import BloodInventory from "../models/BloodInventory.js";
 import asyncHandler from "express-async-handler";
 import PostCounselingQueue from "../models/PostCounselingQueue.js";
+import User from "../models/User.js";
 // GET: Hospital blood requests
 export const getHospitalRequests = async (req, res) => {
   try {
@@ -337,5 +338,196 @@ export const updateDonationBloodType = async (req, res) => {
   } catch (err) {
     console.error("Update blood type error:", err);
     res.status(500).json({ success: false, msg: "Server error" });
+  }
+};
+
+/////////////////////////////////////
+export const getFinalizedNotifications = asyncHandler(async (req, res) => {
+  // 1. Validate the query parameter
+  const { result } = req.query; // Get the filter from the URL query
+  const validResults = ["Safe", "Unsafe"];
+
+  if (!result || !validResults.includes(result)) {
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid or missing 'result' query parameter. Must be 'Safe' or 'Unsafe'.",
+    });
+  } // 2. Fetch data, filtering by finalResult and ensuring notification has happened
+
+  const finalized = await PostCounselingQueue.find({
+    notified: true, // Only show those who have been notified
+    finalResult: result, // Filter by 'Safe' or 'Unsafe' as requested
+  })
+    .populate({
+      path: "donation",
+      select: "aboRh testedAt screeningTests dateOfDonation",
+      populate: {
+        path: "personalInfo",
+        populate: {
+          path: "user",
+          select: "name phone",
+        },
+      },
+    })
+    .select(
+      "hasReactiveResult finalResult notifiedAt notificationLog createdAt"
+    )
+    .sort({ notifiedAt: -1 })
+    .lean(); // 3. Sanitize and structure the data for the response
+
+  const sanitized = finalized.map((item) => {
+    const donor = item.donation?.personalInfo?.user;
+
+    // 🛑 FIX 1: Safely access _id using conditional logic/optional chaining
+    const donationId = item.donation?._id
+      ? `DON-${item.donation._id.toString().slice(-6).toUpperCase()}`
+      : "N/A - Missing Donation"; // Placeholder for corrupted entry // Extracting relevant log info for display
+
+    const latestLog =
+      item.notificationLog?.find((log) => log.status === "sent") ||
+      item.notificationLog?.[0] ||
+      {};
+
+    return {
+      _id: item._id,
+      donationId,
+      phone: donor?.phone || null,
+      name: donor?.name || "Unknown Donor",
+      // 🛑 FIX 2: Safely access aboRh using optional chaining
+      aboRh: item.donation?.aboRh || "Unknown",
+      finalResult: item.finalResult,
+      // 🛑 FIX 3: Safely access testedAt using optional chaining
+      testedAt: item.donation?.testedAt,
+      notifiedAt: item.notifiedAt,
+      smsStatus: latestLog.status, // You can add more fields from notificationLog here if needed (e.g., latestLog.to)
+    };
+  }); // 4. Send the response
+
+  res.json({
+    success: true,
+    count: sanitized.length,
+    data: sanitized,
+  });
+});
+
+/////////////////////////////
+
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    const profilePhoto = user.photo
+      ? `${req.protocol}://${req.get("host")}/uploads/profiles/${user.photo}`
+      : null;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        photo: profilePhoto,
+        hospitalName: user.hospitalName || null,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * @desc    Change password
+ * @route   PATCH /api/hospital_staff/change-password
+ * @access  Private (Hospital Staff)
+ */
+export const changeMyPassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide currentPassword and newPassword",
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be at least 6 characters",
+    });
+  }
+
+  try {
+    const user = await User.findById(req.user._id).select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * @desc    Update profile photo
+ * @route   PATCH /api/hospital_staff/photo
+ * @access  Private (Hospital Staff)
+ */
+export const updateMyPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload an image",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Delete old photo if exists
+    if (user.photo) {
+      const oldPath = path.join(
+        process.cwd(),
+        "uploads",
+        "profiles",
+        user.photo
+      );
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    // Save new photo
+    user.photo = req.file.filename;
+    await user.save();
+
+    const photoUrl = `${req.protocol}://${req.get("host")}/uploads/profiles/${
+      req.file.filename
+    }`;
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      data: { photo: photoUrl },
+    });
+  } catch (error) {
+    console.error("Error uploading photo:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

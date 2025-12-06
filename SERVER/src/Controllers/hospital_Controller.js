@@ -129,42 +129,116 @@ import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
 
+// /**
+//  * @desc    Create a new hospital blood request
+//  * @route   POST /api/hospital_staff/requests
+//  * @access  Private (Hospital Staff)
+//  */
+// export const createHospitalRequest = async (req, res) => {
+//   try {
+//     const { hospitalName, requestDate, bloodType, quantityRequested, remarks } =
+//       req.body;
+
+//     // Validate hospital name
+//     if (
+//       !hospitalName ||
+//       typeof hospitalName !== "string" ||
+//       hospitalName.trim().length === 0
+//     ) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Hospital name is required and must be a non-empty string.",
+//       });
+//     }
+
+//     // Validate request date
+//     if (!requestDate) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request date is required.",
+//       });
+//     }
+//     const parsedDate = new Date(requestDate);
+//     if (isNaN(parsedDate.getTime())) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request date must be a valid date.",
+//       });
+//     }
+
+//     // Validate blood type
+//     const validBloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+//     if (!bloodType || !validBloodTypes.includes(bloodType)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Blood type must be one of: ${validBloodTypes.join(", ")}.`,
+//       });
+//     }
+
+//     // Validate quantity
+//     if (!quantityRequested || typeof quantityRequested !== "number") {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Quantity requested is required and must be a number.",
+//       });
+//     }
+//     if (!Number.isInteger(quantityRequested) || quantityRequested <= 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Quantity requested must be a positive integer greater than zero.",
+//       });
+//     }
+
+//     const newRequest = new HospitalRequest({
+//       hospitalName: hospitalName.trim(),
+//       requestDate: parsedDate,
+//       bloodType,
+//       quantityRequested,
+//       remarks: remarks?.trim() || undefined,
+//       requestedBy: req.user._id,
+//     });
+
+//     await newRequest.save();
+
+//     console.log("Hospital request created:", {
+//       id: newRequest._id,
+//       hospital: hospitalName,
+//       bloodType,
+//       quantity: quantityRequested,
+//     });
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Hospital request created successfully.",
+//       data: newRequest,
+//     });
+//   } catch (error) {
+//     console.error("Error creating hospital request:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error. Could not create hospital request.",
+//     });
+//   }
+// };
 /**
- * @desc    Create a new hospital blood request
- * @route   POST /api/hospital_staff/requests
- * @access  Private (Hospital Staff)
+ * @desc    Create a new hospital blood request
+ * @route   POST /api/hospital_staff/requests
+ * @access  Private (Hospital Staff)
  */
 export const createHospitalRequest = async (req, res) => {
   try {
-    const { hospitalName, requestDate, bloodType, quantityRequested, remarks } =
-      req.body;
+    // 1. Get the Hospital Name from the authenticated user
+    // ASSUMPTION: req.user.name holds the Hospital/Department name
+    const hospitalName = req.user.name;
 
-    // Validate hospital name
-    if (
-      !hospitalName ||
-      typeof hospitalName !== "string" ||
-      hospitalName.trim().length === 0
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Hospital name is required and must be a non-empty string.",
-      });
-    }
+    // 2. Automatically set the Request Date to the current server time
+    const requestDate = Date.now();
 
-    // Validate request date
-    if (!requestDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Request date is required.",
-      });
-    }
-    const parsedDate = new Date(requestDate);
-    if (isNaN(parsedDate.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Request date must be a valid date.",
-      });
-    }
+    // Extract other fields from the request body
+    const { bloodType, quantityRequested, remarks } = req.body;
+
+    // --- Validation (Simplified as name/date are auto-set) ---
 
     // Validate blood type
     const validBloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -190,9 +264,11 @@ export const createHospitalRequest = async (req, res) => {
       });
     }
 
+    // --- Create Request ---
+
     const newRequest = new HospitalRequest({
-      hospitalName: hospitalName.trim(),
-      requestDate: parsedDate,
+      hospitalName: hospitalName.trim(), // Use authenticated user's name
+      requestDate: new Date(requestDate), // Use current date
       bloodType,
       quantityRequested,
       remarks: remarks?.trim() || undefined,
@@ -221,7 +297,6 @@ export const createHospitalRequest = async (req, res) => {
     });
   }
 };
-
 /**
  * @desc    Get all requests made by the logged-in hospital staff
  * @route   GET /api/hospital_staff/my-requests

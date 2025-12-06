@@ -408,3 +408,41 @@ export const updateMyPhoto = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+export const getAvailableBloodStock = async (req, res) => {
+  try {
+    const stock = await BloodInventory.aggregate([
+      {
+        $match: { status: "Available" },
+      },
+      {
+        $group: {
+          _id: "$bloodType",
+          totalBags: { $sum: 1 },
+          totalVolume: { $sum: "$volume" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Convert to object format: { "A+": 5, "O-": 3, ... }
+    const stockMap = {};
+    const allTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+    allTypes.forEach((type) => {
+      const found = stock.find((s) => s._id === type);
+      stockMap[type] = found ? found.totalBags : 0;
+    });
+
+    res.json({
+      success: true,
+      stock: stockMap,
+      details: await BloodInventory.find({ status: "Available" })
+        .populate("testedBy", "name")
+        .sort({ collectionDate: -1 }),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: "Server error" });
+  }
+};

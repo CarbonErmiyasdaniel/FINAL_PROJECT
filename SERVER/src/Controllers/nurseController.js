@@ -420,22 +420,48 @@ export const getLastDonation = async (req, res) => {
 };
 
 // ---------- Write Report ----------
+//
+// Assumed file: Controllers/nurseController.js
+
+// Import the model
+// ... other imports
+
+/**
+ * @desc    Nurse writes a general report or log entry
+ * @route   POST /api/nurse/writeReport
+ * @access  Private (Nurse only)
+ */
 export const writeReport = async (req, res) => {
   try {
-    if (req.user.role !== "nurse")
-      return res.status(403).json({ success: false, msg: "Access denied" });
+    // Assuming req.user is set by the authentication middleware (authNurse)
+    // We already checked the role in the router via authNurse, but a second check is safe.
+    // NOTE: If using the router setup you provided, the role check here is redundant
+    // but often included for robustness. Let's rely on the middleware.
 
     const { action, details } = req.body;
+
+    if (!action) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          msg: "Action field is required for the report.",
+        });
+    }
+
     const report = new NurseReport({
       nurseId: req.user._id,
+      reportDate: Date.now(), // FIX: Automatically set the current date/time
       action,
       details,
     });
+
     await report.save();
-    res.status(201).json({ msg: "Report saved", report });
+
+    res.status(201).json({ msg: "Report saved successfully", report });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error during report creation" });
   }
 };
 ////////////////////////////////////////////////////////////////

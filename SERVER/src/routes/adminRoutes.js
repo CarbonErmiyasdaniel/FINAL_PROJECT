@@ -15,6 +15,7 @@ import {
   getMyProfile,
   changeMyPassword,
   updateMyPhoto,
+  getAvailableBloodStock,
 } from "../Controllers/adminController.js";
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.get(
   authAdmin,
   getNurseReportById
 );
+router.get("/inventory/stock", authAdmin, getAvailableBloodStock);
 router.get("/analytics/dashboard", authAdmin, getDashboardAnalytics);
 router.get("/analytics/blood-stock", authAdmin, getBloodStockSummary);
 router.get("/analytics/requests", authAdmin, getRequestAnalytics);

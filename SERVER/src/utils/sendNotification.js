@@ -268,7 +268,7 @@
 //   process.env.TWILIO_AUTH_TOKEN
 // );
 
-// // Fix Ethiopian phone numbers
+// Fix Ethiopian phone numbers
 // const normalizePhone = (phone) => {
 //   if (!phone) return null;
 //   let p = phone

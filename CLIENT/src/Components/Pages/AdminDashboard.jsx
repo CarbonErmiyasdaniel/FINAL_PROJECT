@@ -20,7 +20,8 @@ import DashboardLayout from "./DashboardLayout";
 import NurseActivityReports from "../Features/admin/NurseActivityReports";
 import UserStatsDashboard from "../Features/admin/UserStatsDashboard";
 import AdminProfile from "../Features/admin/AdminProfile"; // Added
-import DashboardContent from "../Features/admin/DashboardContent";
+import AdminDashboardContent from "../Features/admin/DashboardContent";
+import AdminBloodStockDashboard from "../Features/lab_technician/BloodStockDashboard";
 // --- MetricCard Component ---
 const MetricCard = ({ title, value, icon, color = "indigo" }) => (
   <div
@@ -132,16 +133,14 @@ const Sidebar = ({
                 : "opacity-0 h-0 overflow-hidden"
             }`}
           >
-            <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
+            {/* <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
               <Heart className="h-7 w-7 mr-2 text-white fill-current" />
               <span
                 className={
                   isDesktop && !isOpen ? "hidden" : "transition-opacity"
                 }
-              >
-                DBBC ADMIN
-              </span>
-            </h1>
+              ></span>
+            </h1> */}
             {!isDesktop && (
               <button
                 onClick={onClose}
@@ -159,7 +158,7 @@ const Sidebar = ({
                 isOpen ? "justify-start" : "justify-center"
               } `}
             >
-              <div className="relative group">
+              {/* <div className="relative group">
                 <img
                   src="https://via.placeholder.com/48/FFFFFF/A51B27?text=AD"
                   alt="Admin Profile"
@@ -173,14 +172,14 @@ const Sidebar = ({
                 >
                   {isOpen ? "Edit" : <User className="w-4 h-4" />}
                 </button>
-              </div>
+              </div> */}
 
               <div
                 className={`ml-4 transition-opacity duration-300 ${
                   isOpen ? "opacity-100 block" : "opacity-0 hidden"
                 }`}
               >
-                <p className="font-semibold text-white">Admin Selam</p>
+                <p className="font-semibold text-white">Admin</p>
                 <p className="text-xs text-red-200">Role: Head Admin</p>
               </div>
             </div>
@@ -343,7 +342,7 @@ const AdminDashboard = () => {
   const RenderPage = () => {
     switch (currentPage) {
       case "/admin/dashboard":
-        return <DashboardContent />;
+        return <AdminDashboardContent />;
       case "/admin/register-user":
         return <RegisterUserPage />;
       case "/admin/getAllUsers":
@@ -352,6 +351,8 @@ const AdminDashboard = () => {
         return <NurseActivityReports />;
       case "/admin/UserStatsDashboard":
         return <UserStatsDashboard />;
+      case "/admin/stock":
+        return <AdminBloodStockDashboard />;
 
       case "/admin/profile": // Added this
         return <AdminProfile />;
@@ -413,6 +414,13 @@ const AdminDashboard = () => {
           isExpanded={isSidebarOpen}
           isActive={currentPage === "/admin/UserStatsDashboard"}
         />
+        {/* <SidebarButton
+          onClick={() => handleNavigate("/admin/stock")}
+          icon={<BarChart />}
+          label="Blood Stock"
+          isExpanded={isSidebarOpen}
+          isActive={currentPage === "/admin/stock"}
+        /> */}
       </Sidebar>
 
       <main

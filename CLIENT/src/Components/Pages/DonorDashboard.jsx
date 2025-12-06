@@ -237,7 +237,8 @@ import DashboardLayout from "./DashboardLayout"; // ← This is your floating na
 import DonorProfile from "../Features/donor/DonorProfile.jsx";
 import DonorDashboardHome from "../Features/donor/DonorDashboardHome.jsx";
 import DonationHistory from "../Features/donor/DonationHistory.jsx";
-
+import DonorPersonalInfo from "../Features/donor/DonorPersonalInfo";
+import DonorDonationHistory from "../Features/donor/DonorDonationHistory";
 // ──────────────── Sidebar Button ────────────────
 const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => {
   const baseClasses = `relative flex items-center h-12 w-full transition-all duration-300 font-medium text-white rounded-lg group hover:bg-red-700/50 hover:shadow-md`;
@@ -307,10 +308,10 @@ const Sidebar = ({
               isOpen || !isDesktop ? "opacity-100" : "opacity-0 h-0"
             }`}
           >
-            <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
+            {/* <h1 className="text-2xl font-black tracking-widest text-white uppercase flex items-center">
               <Droplet className="h-7 w-7 mr-2 fill-current" />
               DONOR PORTAL
-            </h1>
+            </h1> */}
             {!isDesktop && (
               <button
                 onClick={onClose}
@@ -321,7 +322,7 @@ const Sidebar = ({
             )}
           </div>
 
-          <div className="pt-4 border-t border-red-700">
+          {/* <div className="pt-4 border-t border-red-700">
             <div
               className={`flex items-center ${
                 isOpen ? "justify-start" : "justify-center"
@@ -339,7 +340,7 @@ const Sidebar = ({
                 <p className="text-xs text-red-200">Life Saver</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div
@@ -401,6 +402,10 @@ const DonorDashboard = ({ pageKey }) => {
         return <DonorProfile />;
       case "/donor/history":
         return <DonationHistory />;
+      case "/donor/personal-info":
+        return <DonorPersonalInfo />;
+      case "/donor/donation-history":
+        return <DonorDonationHistory />;
       default:
         return <DonorDashboardHome />;
     }
@@ -432,11 +437,19 @@ const DonorDashboard = ({ pageKey }) => {
             isActive={currentPage === "/donor/profile"}
           />
           <SidebarButton
-            onClick={() => handleNavigate("/donor/history")}
+            onClick={() => handleNavigate("/donor/personal-info")}
+            icon={<User />}
+            label="Personal Info"
+            isExpanded={isSidebarOpen}
+            isActive={currentPage === "/donor/personal-info"}
+          />
+
+          <SidebarButton
+            onClick={() => handleNavigate("/donor/donation-history")}
             icon={<Calendar />}
             label="Donation History"
             isExpanded={isSidebarOpen}
-            isActive={currentPage === "/donor/history"}
+            isActive={currentPage === "/donor/donation-history"}
           />
         </Sidebar>
 

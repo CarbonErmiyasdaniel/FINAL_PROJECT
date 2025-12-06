@@ -395,7 +395,7 @@
 //     <DashboardLayout>
 //       <PostCounselorDashboard {...props} />
 //     </DashboardLayout>
-//   );
+//   );t
 // }
 // src/Components/Pages/PostCounselorDashboard.jsx
 // src/Components/Pages/PostCounselorDashboard.jsx
@@ -415,7 +415,7 @@ import DashboardLayout from "./DashboardLayout";
 import PostCounselorDashboardContent from "../Features/post_counselor/PostCounselorDashboardContent";
 import PostCounselorProfile from "../Features/post_counselor/PostCounselorProfile";
 import PostCounselorSettings from "../Features/post_counselor/PostCounselorSettings";
-
+import FinalizedNotificationsList from "../Features/post_counselor/FinalizedNotificationsList";
 // ==================== Sidebar Button ====================
 const SidebarButton = ({ onClick, icon, label, isExpanded, isActive }) => {
   const base = `relative flex items-center h-12 w-full rounded-lg group font-medium text-white hover:bg-red-700/50 transition-all`;
@@ -474,7 +474,7 @@ const Sidebar = ({ isOpen, onClose, isDesktop, children }) => (
               isOpen ? "block" : "hidden"
             }`}
           >
-            <Heart className="h-7 w-7 mr-2 fill-white" />
+            {/* <Heart className="h-7 w-7 mr-2 fill-white" /> */}
             POST-COUNSELOR
           </h1>
           {!isDesktop && (
@@ -532,8 +532,8 @@ const PostCounselorDashboard = () => {
         return <PostCounselorDashboardContent />;
       case "/post_counselor/profile":
         return <PostCounselorProfile />;
-      case "/post_counselor/settings":
-        return <PostCounselorSettings />;
+      case "/post_counselor/finalized-notifications":
+        return <FinalizedNotificationsList />;
       default:
         return <PostCounselorDashboardContent />;
     }
@@ -546,13 +546,13 @@ const PostCounselorDashboard = () => {
         onClose={() => setIsSidebarOpen(false)}
         isDesktop={isDesktop}
       >
-        <SidebarButton
+        {/* <SidebarButton
           onClick={() => handleNavigate("/post_counselor/dashboard")}
           icon={<Home />}
           label="Dashboard"
           isExpanded={isSidebarOpen}
           isActive={currentPage === "/post_counselor/dashboard"}
-        />
+        /> */}
         <SidebarButton
           onClick={() => handleNavigate("/post_counselor/notifications")}
           icon={<MessageSquare />}
@@ -568,11 +568,13 @@ const PostCounselorDashboard = () => {
           isActive={currentPage === "/post_counselor/profile"}
         />
         <SidebarButton
-          onClick={() => handleNavigate("/post_counselor/settings")}
+          onClick={() =>
+            handleNavigate("/post_counselor/finalized-notifications")
+          }
           icon={<Settings />}
-          label="Settings"
+          label="Finalized Notifications"
           isExpanded={isSidebarOpen}
-          isActive={currentPage === "/post_counselor/settings"}
+          isActive={currentPage === "/post_counselor/finalized-notifications"}
         />
       </Sidebar>
 

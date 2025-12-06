@@ -1,19 +1,3 @@
-// import express from "express";
-// import { authHospitalStaff } from "../middleware/authMiddleware.js";
-// import {
-//   createHospitalRequest,
-//   getMyRequests,
-// } from "../Controllers/hospital_Controller.js";
-
-// const router = express.Router();
-
-// // Hospital Staff routes
-// router.post("/requests", authHospitalStaff, createHospitalRequest);
-// router.get("/my-requests", authHospitalStaff, getMyRequests);
-
-// export default router;
-///////////\\\\\\\\\
-// routes/hospital_staff_routes.js
 import express from "express";
 import { authHospitalStaff } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js"; // ← Make sure this file exists!
